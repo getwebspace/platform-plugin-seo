@@ -21,7 +21,7 @@ class SearchOptimizationPlugin extends Plugin
         parent::__construct($container);
 
         $this->setTemplateFolder(__DIR__ . '/templates');
-        $this->addToolbarItem(['twig' => 'actions.twig']);
+        $this->addToolbarItem(['twig' => 'seo.twig']);
 
         $this->addSettingsField([
             'label' => 'Автоматический запуск',
