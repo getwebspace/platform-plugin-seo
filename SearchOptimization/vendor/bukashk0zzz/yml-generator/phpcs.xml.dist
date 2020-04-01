@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ruleset name="YmlGeneratorCS">
+    <description>YmlGenerator coding standard.</description>
+
+    <exclude-pattern>vendor/</exclude-pattern>
+
+    <rule ref="PHPCompatibility" />
+    <rule ref="Symfony">
+        <exclude name="Symfony.ControlStructure.YodaConditions.Invalid"/>
+    </rule>
+
+    <config name="testVersion" value="5.6-"/>
+
+    <arg name="colors"/>
+    <arg name="encoding" value="utf-8"/>
+    <arg name="extensions" value="php"/>
+
+    <file>./</file>
+</ruleset>
