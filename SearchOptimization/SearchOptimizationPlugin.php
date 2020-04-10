@@ -7,14 +7,20 @@ include_once __DIR__ . '/vendor/autoload.php';
 use App\Application\Plugin;
 use Psr\Container\ContainerInterface;
 use samdark\sitemap\Sitemap;
+use Slim\Http\Request;
+use Slim\Http\Response;
 
 class SearchOptimizationPlugin extends Plugin
 {
-    const NAME        = "SearchOptimizationPlugin";
-    const TITLE       = "Search optimization";
-    const DESCRIPTION = "Плагин поисковой оптимизации, генерирует XML файлы: SiteMap, Google Merchant Feed, Yandex Market";
-    const AUTHOR      = "Aleksey Ilyin";
+    const NAME = 'SearchOptimizationPlugin';
+    const TITLE = 'Search optimization';
+    const DESCRIPTION = 'Плагин поисковой оптимизации, генерирует XML файлы: ' .
+                        '<a href="/xml/sitemap" target="_blank">SiteMap</a>, ' .
+                        '<a href="/xml/gmf" target="_blank">Google Merchant Feed</a>, ' .
+                        '<a href="/xml/yml" target="_blank">Yandex Market</a>';
+    const AUTHOR = "Aleksey Ilyin";
     const AUTHOR_SITE = "https://site.0x12f.com";
+    const VERSION = "1.1";
 
     public function __construct(ContainerInterface $container)
     {
@@ -49,7 +55,7 @@ class SearchOptimizationPlugin extends Plugin
                     Sitemap::WEEKLY => Sitemap::WEEKLY,
                     Sitemap::MONTHLY => Sitemap::MONTHLY,
                     Sitemap::YEARLY => Sitemap::YEARLY,
-                    Sitemap::NEVER => Sitemap::NEVER
+                    Sitemap::NEVER => Sitemap::NEVER,
                 ],
             ],
         ]);
@@ -85,6 +91,26 @@ class SearchOptimizationPlugin extends Plugin
             'description' => 'Указывается в днях',
             'type' => 'number',
             'name' => 'delivery_days',
+        ]);
+
+        $this->addSettingsField([
+            'label' => 'Содержимое файла robots.txt',
+            'description' => '<a href="/robots.txt" target="_blank">robots.txt</a>',
+            'type' => 'textarea',
+            'name' => 'robots_txt',
+            'args' => [
+                'style' => 'height: 200px!important;',
+            ],
+        ]);
+
+        $this->map([
+            'methods' => ['get'],
+            'pattern' => '/robots.txt',
+            'handler' => function (Request $req, Response $res) {
+                return $res->withHeader('Content-Type', 'text/plain')->write(
+                    $this->getParameter('SearchOptimizationPlugin_robots_txt', '')
+                );
+            },
         ]);
 
         $this->setHandledRoute(

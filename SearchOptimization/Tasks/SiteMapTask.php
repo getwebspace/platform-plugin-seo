@@ -3,17 +3,12 @@
 namespace Plugin\SearchOptimization\Tasks;
 
 use App\Domain\Tasks\Task;
-use Bukashk0zzz\YmlGenerator\Generator;
-use Bukashk0zzz\YmlGenerator\Model\Category;
-use Bukashk0zzz\YmlGenerator\Model\Currency;
-use Bukashk0zzz\YmlGenerator\Model\Delivery;
-use Bukashk0zzz\YmlGenerator\Model\Offer\OfferSimple;
-use Bukashk0zzz\YmlGenerator\Model\ShopInfo;
-use Bukashk0zzz\YmlGenerator\Settings;
 use samdark\sitemap\Sitemap;
 
 class SiteMapTask extends Task
 {
+    public const TITLE = 'Генерация карты сайта';
+
     public function execute(array $params = []): \App\Domain\Entities\Task
     {
         $default = [
@@ -45,11 +40,12 @@ class SiteMapTask extends Task
             'product' => collect($productRepository->findBy(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK])),
         ];
 
-        $url = $this->getParameter('common_homepage', 'http://site.0x12f.com');
+        $url = $this->getParameter('common_homepage', '');
         $frequency = $this->getParameter('SearchOptimizationPlugin_frequency', Sitemap::WEEKLY);
 
         // create sitemap
         $sitemap = new Sitemap(XML_DIR . '/sitemap.xml');
+        $sitemap->setUseIndent(true);
 
         // main page
         $sitemap->addItem($url, time(), $frequency, 0.5);

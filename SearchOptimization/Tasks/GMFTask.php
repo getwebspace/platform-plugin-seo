@@ -9,6 +9,8 @@ use Vitalybaev\GoogleMerchant\Product\Availability\Availability;
 
 class GMFTask extends Task
 {
+    public const TITLE = 'Генерация GMF файла';
+
     public function execute(array $params = []): \App\Domain\Entities\Task
     {
         $default = [
@@ -37,9 +39,9 @@ class GMFTask extends Task
         ];
 
         $feed = new Feed(
-            $this->getParameter('integration_merchant_shop_title', 'Shop on WebSpace Engine CMS'),
-            $this->getParameter('common_homepage', 'http://site.0x12f.com'),
-            $this->getParameter('integration_merchant_shop_description', 'http://site.0x12f.com')
+            $this->getParameter('integration_merchant_shop_title', ''),
+            $this->getParameter('common_homepage', ''),
+            $this->getParameter('integration_merchant_shop_description', '')
         );
 
         // Put products to the feed ($products - some data from database for example)

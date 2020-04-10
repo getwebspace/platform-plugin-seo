@@ -14,6 +14,8 @@ use Bukashk0zzz\YmlGenerator\Settings;
 
 class YMLTask extends Task
 {
+    public const TITLE = 'Генерация YML файла';
+
     public function execute(array $params = []): \App\Domain\Entities\Task
     {
         $default = [
@@ -44,9 +46,9 @@ class YMLTask extends Task
 
         $shopInfo = new ShopInfo();
         $shopInfo
-            ->setName($this->getParameter('integration_merchant_shop_title', 'Shop on WebSpace Engine CMS'))
-            ->setCompany($this->getParameter('integration_merchant_company_title', 'My own company'))
-            ->setUrl($this->getParameter('common_homepage', 'http://site.0x12f.com'))
+            ->setName($this->getParameter('integration_merchant_shop_title', ''))
+            ->setCompany($this->getParameter('integration_merchant_company_title', ''))
+            ->setUrl($this->getParameter('common_homepage', ''))
             ->setEmail($this->getParameter('smtp_from', null))
             ->setPlatform('WebSpace Engine CMS');
 
