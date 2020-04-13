@@ -88,7 +88,8 @@ class GMFTask extends Task
         $this->setStatusDone();
     }
 
-    protected function getCrc32(\Ramsey\Uuid\Uuid $uuid) {
+    protected function getCrc32(\Ramsey\Uuid\Uuid $uuid)
+    {
         if ($uuid->toString() !== \Ramsey\Uuid\Uuid::NIL) {
             return crc32($uuid->getHex());
         }

@@ -76,15 +76,7 @@ class YMLTask extends Task
             $url = $homepage . '/' . $this->getParameter('catalog_address', 'catalog') . '/' . $model->address;
             $pictures = [];
 
-            foreach (
-                $model->hasFiles() ?
-                    $model->getFiles() :
-                    (
-                        $category->hasFiles() ?
-                            $category->getFiles() :
-                            []
-                    ) as $file
-            ) {
+            foreach ($model->hasFiles() ? $model->getFiles() : ($category && $category->hasFiles() ? $category->getFiles() : []) as $file) {
                 /** @var \App\Domain\Entities\File $file */
                 $pictures[] = $homepage . $file->getPublicPath();
             }
@@ -116,6 +108,7 @@ class YMLTask extends Task
     }
 
     protected $indexCategory = 0;
+
     protected function prepareCategory(Collection &$categories, $parent = \Ramsey\Uuid\Uuid::NIL)
     {
         $result = [];
@@ -135,6 +128,7 @@ class YMLTask extends Task
     }
 
     protected $indexProduct = 0;
+
     protected function prepareProduct(Collection $products)
     {
         foreach ($products as $model) {

@@ -28,7 +28,6 @@ class SearchOptimizationPlugin extends Plugin
 
         $this->setTemplateFolder(__DIR__ . '/templates');
         $this->addToolbarItem(['twig' => 'seo.twig']);
-
         $this->addSettingsField([
             'label' => 'Автоматический запуск',
             'description' => 'Генерировать XML файлы автоматически после каждого изменения в страницах, публикациях и продуктах каталога',
@@ -41,7 +40,6 @@ class SearchOptimizationPlugin extends Plugin
                 ],
             ],
         ]);
-
         $this->addSettingsField([
             'label' => 'Частота обновления контента',
             'type' => 'select',
@@ -59,7 +57,6 @@ class SearchOptimizationPlugin extends Plugin
                 ],
             ],
         ]);
-
         $this->addSettingsField([
             'label' => 'Название компании',
             'type' => 'text',
@@ -92,7 +89,6 @@ class SearchOptimizationPlugin extends Plugin
             'type' => 'number',
             'name' => 'delivery_days',
         ]);
-
         $this->addSettingsField([
             'label' => 'Содержимое файла robots.txt',
             'description' => '<a href="/robots.txt" target="_blank">robots.txt</a>',
@@ -112,7 +108,6 @@ class SearchOptimizationPlugin extends Plugin
                 );
             },
         ]);
-
         $this->setHandledRoute(
             'cup:catalog:data:import',
             'cup:catalog:category:add',
