@@ -53,35 +53,35 @@ class SiteMapTask extends Task
         // other pages
         foreach ($data['page'] as $model) {
             /** @var \App\Domain\Entities\Page $model */
-            $sitemap->addItem($url . $model->address, $model->date->getTimestamp(), $frequency, 0.3);
+            $sitemap->addItem($url . trim($model->address), $model->date->getTimestamp(), $frequency, 0.3);
         }
 
         // publications category
         foreach ($data['publicationCategory'] as $model) {
             /** @var \App\Domain\Entities\Publication\Category $model */
-            $sitemap->addItem($url . $model->address, time(), $frequency, 0.3);
+            $sitemap->addItem($url . trim($model->address), time(), $frequency, 0.3);
         }
 
         // publications
         foreach ($data['publication'] as $model) {
             /** @var \App\Domain\Entities\Publication $model */
-            $sitemap->addItem($url . $model->address, $model->date->getTimestamp(), $frequency, 0.3);
+            $sitemap->addItem($url . trim($model->address), $model->date->getTimestamp(), $frequency, 0.3);
         }
 
         if ($this->getParameter('catalog_is_enabled', 'no') === 'yes') {
             // main catalog
             $catalogPath = $url . $this->getParameter('catalog_address', 'catalog');
-            $sitemap->addItem($catalogPath, time(), $frequency, 0.4);
+            $sitemap->addItem(trim($catalogPath), time(), $frequency, 0.4);
 
             // catalog category
             foreach ($data['category'] as $model) {
                 /** @var \App\Domain\Entities\Catalog\Category $model */
-                $sitemap->addItem($catalogPath . '/' . $model->address, time(), $frequency, 0.5);
+                $sitemap->addItem($catalogPath . '/' . trim($model->address), time(), $frequency, 0.5);
             }
 
             // catalog products
             foreach ($data['product'] as $model) {
-                $sitemap->addItem($catalogPath . '/' . $model->address, $model->date->getTimestamp(), $frequency, 0.7);
+                $sitemap->addItem($catalogPath . '/' . trim($model->address), $model->date->getTimestamp(), $frequency, 0.7);
             }
         }
 
