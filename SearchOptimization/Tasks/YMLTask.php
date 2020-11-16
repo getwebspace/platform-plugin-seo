@@ -1,9 +1,10 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Plugin\SearchOptimization\Tasks;
 
-use Alksily\Entity\Collection;
-use App\Domain\Tasks\Task;
+use App\Domain\AbstractTask;
+use App\Domain\Service\Catalog\CategoryService;
+use App\Domain\Service\Catalog\ProductService;
 use Bukashk0zzz\YmlGenerator\Generator;
 use Bukashk0zzz\YmlGenerator\Model\Category;
 use Bukashk0zzz\YmlGenerator\Model\Currency;
@@ -11,8 +12,9 @@ use Bukashk0zzz\YmlGenerator\Model\Delivery;
 use Bukashk0zzz\YmlGenerator\Model\Offer\OfferSimple;
 use Bukashk0zzz\YmlGenerator\Model\ShopInfo;
 use Bukashk0zzz\YmlGenerator\Settings;
+use Illuminate\Support\Collection;
 
-class YMLTask extends Task
+class YMLTask extends AbstractTask
 {
     public const TITLE = 'Генерация YML файла';
 
@@ -26,17 +28,13 @@ class YMLTask extends Task
         return parent::execute($params);
     }
 
-    protected function action(array $args = [])
+    protected function action(array $args = []): void
     {
-        /**
-         * @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository $categoryRepository
-         * @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository $productRepository
-         */
-        $categoryRepository = $this->entityManager->getRepository(\App\Domain\Entities\Catalog\Category::class);
-        $productRepository = $this->entityManager->getRepository(\App\Domain\Entities\Catalog\Product::class);
+        $categoryService = CategoryService::getWithContainer($this->container);
+        $productService = ProductService::getWithContainer($this->container);
         $data = [
-            'category' => collect($categoryRepository->findBy(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK])),
-            'product' => collect($productRepository->findBy(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK])),
+            'category' => $categoryService->read(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK]),
+            'product' => $productService->read(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK]),
         ];
 
         $settings = new Settings();
@@ -46,34 +44,33 @@ class YMLTask extends Task
 
         $shopInfo = new ShopInfo();
         $shopInfo
-            ->setName($this->getParameter('integration_merchant_shop_title', ''))
-            ->setCompany($this->getParameter('integration_merchant_company_title', ''))
-            ->setUrl($this->getParameter('common_homepage', ''))
-            ->setEmail($this->getParameter('smtp_from', null))
+            ->setName($this->parameter('integration_merchant_shop_title', ''))
+            ->setCompany($this->parameter('integration_merchant_company_title', ''))
+            ->setUrl($this->parameter('common_homepage', ''))
+            ->setEmail($this->parameter('smtp_from', null))
             ->setPlatform('WebSpace Engine CMS');
 
         $currencies = [];
-        $currencies[] = (new Currency())->setId($this->getParameter('integration_merchant_currency', 'RUB'))->setRate(1);
+        $currencies[] = (new Currency())->setId($this->parameter('integration_merchant_currency', 'RUB'))->setRate(1);
 
         $categories = [];
-        foreach ($this->prepareCategory($data['category']->sortBy('title')) as $item) {
+        foreach ($this->prepareCategory($data['category']->sortBy('title')) as $index => $item) {
             $categories[$item['id']] = (new Category())
                 ->setId($item['id'])
                 ->setParentId($item['parent'])
-                ->setName($item['title'])
-            ;
+                ->setName($item['title']);
         }
 
         $offers = [];
-        foreach ($this->prepareProduct($data['product']) as $model) {
+        foreach ($this->prepareProduct($data['product']) as $index => $model) {
             /**
              * @var \App\Domain\Entities\Catalog\Category $category
              * @var \App\Domain\Entities\Catalog\Product  $model
              */
-            $category = $data['category']->firstWhere('uuid', $model->category);
+            $category = $data['category']->firstWhere('uuid', $model->getCategory());
 
-            $homepage = rtrim($this->getParameter('common_homepage', ''), '/');
-            $url = $homepage . '/' . $this->getParameter('catalog_address', 'catalog') . '/' . $model->address;
+            $homepage = rtrim($this->parameter('common_homepage', ''), '/');
+            $url = $homepage . '/' . $this->parameter('catalog_address', 'catalog') . '/' . $model->getAddress();
             $pictures = [];
 
             foreach ($model->hasFiles() ? $model->getFiles() : ($category && $category->hasFiles() ? $category->getFiles() : []) as $file) {
@@ -83,24 +80,34 @@ class YMLTask extends Task
 
             $offers[$model->buf] = (new OfferSimple())
                 ->setId($model->buf)
-                ->setVendor($model->manufacturer ? $model->manufacturer : null)
-                ->setVendorCode($model->vendorcode ? $model->vendorcode : null)
-                ->setAvailable(!!$model->stock)
+                ->setVendor($model->getManufacturer() ? $model->getManufacturer() : null)
+                ->setVendorCode($model->getVendorCode() ? $model->getVendorCode() : null)
+                ->setAvailable((bool) $model->getStock())
                 ->setUrl($url)
-                ->setPrice($model->price)
-                ->setCurrencyId($this->getParameter('integration_merchant_currency', 'RUB'))
+                ->setPrice($model->getPrice())
+                ->setCurrencyId($this->parameter('integration_merchant_currency', 'RUB'))
                 ->setCategoryId($category->buf)
-                ->setName($model->title)
+                ->setName($model->getTitle())
                 ->setDescription(
-                    trim(strip_tags($model->description ? $model->description : ($model->extra ? $model->extra : $model->title)))
+                    trim(
+                        strip_tags(
+                            $model->getDescription() ?
+                                $model->getDescription() :
+                                (
+                                    $model->getExtra() ?
+                                        $model->getExtra() :
+                                        $model->getTitle()
+                                )
+                        )
+                    )
                 )
                 ->setPictures($pictures);
         }
 
         $deliveries = [];
         $deliveries[] = (new Delivery())
-            ->setCost($this->getParameter('integration_merchant_delivery_cost', '0'))
-            ->setDays($this->getParameter('integration_merchant_delivery_days', '0'));
+            ->setCost($this->parameter('integration_merchant_delivery_cost', '0'))
+            ->setDays($this->parameter('integration_merchant_delivery_days', '0'));
 
         (new Generator($settings))->generate($shopInfo, $currencies, $categories, $offers, $deliveries);
 
@@ -117,11 +124,11 @@ class YMLTask extends Task
             /** @var \App\Domain\Entities\Catalog\Category $model */
             $result[] = [
                 'id' => $model->buf = ++$this->indexCategory,
-                'parent' => $categories->firstWhere('uuid', $model->parent)->buf ?? null,
-                'title' => $model->title,
+                'parent' => $categories->firstWhere('uuid', $model->getParent())->buf ?? null,
+                'title' => $model->getTitle(),
             ];
 
-            $result = array_merge($result, $this->prepareCategory($categories, $model->uuid));
+            $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
         }
 
         return $result;

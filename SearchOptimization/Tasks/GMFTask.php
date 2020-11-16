@@ -1,13 +1,15 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Plugin\SearchOptimization\Tasks;
 
-use App\Domain\Tasks\Task;
+use App\Domain\AbstractTask;
+use App\Domain\Service\Catalog\CategoryService;
+use App\Domain\Service\Catalog\ProductService;
 use Vitalybaev\GoogleMerchant\Feed;
 use Vitalybaev\GoogleMerchant\Product;
 use Vitalybaev\GoogleMerchant\Product\Availability\Availability;
 
-class GMFTask extends Task
+class GMFTask extends AbstractTask
 {
     public const TITLE = 'Генерация GMF файла';
 
@@ -21,65 +23,54 @@ class GMFTask extends Task
         return parent::execute($params);
     }
 
-    protected function action(array $args = [])
+    protected function action(array $args = []): void
     {
-        $homepage = rtrim($this->getParameter('common_homepage', ''), '/');
-        $catalog = $homepage . '/' . $this->getParameter('catalog_address', 'catalog') . '/';
+        $homepage = rtrim($this->parameter('common_homepage', ''), '/');
+        $catalog = $homepage . '/' . $this->parameter('catalog_address', 'catalog') . '/';
 
-        /**
-         * @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository $categoryRepository
-         * @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository $productRepository
-         * @var \Doctrine\Common\Persistence\ObjectRepository|\Doctrine\ORM\EntityRepository $fileRepository
-         */
-        $categoryRepository = $this->entityManager->getRepository(\App\Domain\Entities\Catalog\Category::class);
-        $productRepository = $this->entityManager->getRepository(\App\Domain\Entities\Catalog\Product::class);
+        $categoryService = CategoryService::getWithContainer($this->container);
+        $productService = ProductService::getWithContainer($this->container);
         $data = [
-            'category' => collect($categoryRepository->findBy(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK])),
-            'product' => collect($productRepository->findBy(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK])),
+            'category' => $categoryService->read(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK]),
+            'product' => $productService->read(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK]),
         ];
 
         $feed = new Feed(
-            $this->getParameter('integration_merchant_shop_title', ''),
-            $this->getParameter('common_homepage', ''),
-            $this->getParameter('integration_merchant_shop_description', '')
+            $this->parameter('integration_merchant_shop_title', ''),
+            $this->parameter('common_homepage', ''),
+            $this->parameter('integration_merchant_shop_description', '')
         );
 
-        // Put products to the feed ($products - some data from database for example)
+        // put products to the feed ($products - some data from database for example)
         foreach ($data['product'] as $model) {
             /** @var \App\Domain\Entities\Catalog\Category $category */
             /** @var \App\Domain\Entities\Catalog\Product $model */
-            $category = $data['category']->firstWhere('uuid', $model->category);
+            $category = $data['category']->firstWhere('uuid', $model->getCategory());
 
             $item = new Product();
 
-            // Set common product properties
-            $item->setId($this->getCrc32($model->uuid));
-            $item->setTitle($model->title);
-            if ($model->description) {
-                $item->setDescription($model->description);
-            }
-            $item->setLink($catalog . $model->address);
+            // set common product properties
+            $item->setId($this->getCrc32($model->getUuid()));
+            $item->setTitle($model->getTitle());
+            $item->setDescription($model->getDescription());
+            $item->setLink($catalog . $model->getAddress());
             if ($model->hasFiles()) {
                 $item->setImage($homepage . $model->getFiles()->first()->getPublicPath());
             }
-            if ($model->stock > 0) {
+            if ($model->getStock()) {
                 $item->setAvailability(Availability::IN_STOCK);
             } else {
                 $item->setAvailability(Availability::OUT_OF_STOCK);
             }
-            $item->setPrice("{$model->price} RUB");
+            $item->setPrice("{$model->getPrice()} RUB");
             if ($category) {
-                $item->setGoogleCategory($category->title);
+                $item->setGoogleCategory($category->getTitle());
             }
-            if ($model->manufacturer) {
-                $item->setBrand($model->manufacturer);
-            }
-            if ($model->barcode) {
-                $item->setGtin($model->barcode);
-            }
+            $item->setBrand($model->getManufacturer());
+            $item->setGtin($model->getBarCode());
             $item->setCondition('new');
 
-            // Add this product to the feed
+            // add this product to the feed
             $feed->addProduct($item);
         }
 

@@ -1,16 +1,16 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Plugin\SearchOptimization;
 
 include_once __DIR__ . '/vendor/autoload.php';
 
-use App\Application\Plugin;
+use App\Domain\AbstractPlugin;
 use Psr\Container\ContainerInterface;
 use samdark\sitemap\Sitemap;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
-class SearchOptimizationPlugin extends Plugin
+class SearchOptimizationPlugin extends AbstractPlugin
 {
     const NAME = 'SearchOptimizationPlugin';
     const TITLE = 'Search optimization';
@@ -18,9 +18,9 @@ class SearchOptimizationPlugin extends Plugin
                         '<a href="/xml/sitemap" target="_blank">SiteMap</a>, ' .
                         '<a href="/xml/gmf" target="_blank">Google Merchant Feed</a>, ' .
                         '<a href="/xml/yml" target="_blank">Yandex Market</a>';
-    const AUTHOR = "Aleksey Ilyin";
-    const AUTHOR_SITE = "https://site.0x12f.com";
-    const VERSION = "1.1";
+    const AUTHOR = 'Aleksey Ilyin';
+    const AUTHOR_SITE = 'https://site.0x12f.com';
+    const VERSION = '2.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -104,7 +104,7 @@ class SearchOptimizationPlugin extends Plugin
             'pattern' => '/robots.txt',
             'handler' => function (Request $req, Response $res) {
                 return $res->withHeader('Content-Type', 'text/plain')->write(
-                    $this->getParameter('SearchOptimizationPlugin_robots_txt', '')
+                    $this->parameter('SearchOptimizationPlugin_robots_txt', '')
                 );
             },
         ]);
@@ -128,7 +128,7 @@ class SearchOptimizationPlugin extends Plugin
         );
     }
 
-    /** @inheritDoc */
+    /** {@inheritdoc} */
     public function after(\Slim\Http\Request $request, \Slim\Http\Response $response, string $routeName): \Slim\Http\Response
     {
         if ($request->isPost()) {
@@ -151,6 +151,7 @@ class SearchOptimizationPlugin extends Plugin
                     // add task generate SiteMap
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();
+
                     break;
 
                 case 'cup:page:add':
@@ -165,13 +166,12 @@ class SearchOptimizationPlugin extends Plugin
                     // add task generate SiteMap
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();
+
                     break;
             }
 
-            $this->entityManager->flush();
-
             // run worker
-            \App\Domain\Tasks\Task::worker();
+            \App\Domain\AbstractTask::worker();
         }
 
         return $response;
