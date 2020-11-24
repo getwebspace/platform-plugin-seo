@@ -5,14 +5,9 @@ namespace Plugin\SearchOptimization\Tasks;
 use App\Domain\AbstractTask;
 use App\Domain\Service\Catalog\CategoryService;
 use App\Domain\Service\Catalog\ProductService;
-use Bukashk0zzz\YmlGenerator\Generator;
-use Bukashk0zzz\YmlGenerator\Model\Category;
-use Bukashk0zzz\YmlGenerator\Model\Currency;
-use Bukashk0zzz\YmlGenerator\Model\Delivery;
-use Bukashk0zzz\YmlGenerator\Model\Offer\OfferSimple;
-use Bukashk0zzz\YmlGenerator\Model\ShopInfo;
-use Bukashk0zzz\YmlGenerator\Settings;
 use Illuminate\Support\Collection;
+
+include_once __DIR__ . '../helper.php';
 
 class YMLTask extends AbstractTask
 {
@@ -30,86 +25,27 @@ class YMLTask extends AbstractTask
 
     protected function action(array $args = []): void
     {
-        $categoryService = CategoryService::getWithContainer($this->container);
-        $productService = ProductService::getWithContainer($this->container);
+        $categoryService = \App\Domain\Service\Catalog\CategoryService::getWithContainer($this->container);
+        $productService = \App\Domain\Service\Catalog\ProductService::getWithContainer($this->container);
+
+        $template = $this->parameter('SearchOptimizationPlugin_yml_txt', '');
         $data = [
-            'category' => $categoryService->read(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK]),
-            'product' => $productService->read(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK]),
+            'shop_title' => $this->parameter('SearchOptimizationPlugin_shop_title', ''),
+            'company_title' => $this->parameter('SearchOptimizationPlugin_company_title', ''),
+            'site_address' => $this->parameter('common_homepage', ''),
+            'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
+            'email' => $this->parameter('smtp_from', ''),
+            'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),
+            'delivery_cost' => $this->parameter('SearchOptimizationPlugin_delivery_cost', ''),
+            'delivery_days' => $this->parameter('SearchOptimizationPlugin_delivery_days', ''),
+            'categories' => $categoryService->read(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK]),
+            'products' => $productService->read(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK]),
         ];
+        $data['categories'] = collect($this->prepareCategory($data['categories']->sortBy('title')));
+        $data['products'] = $this->prepareProduct($data['products']);
 
-        $settings = new Settings();
-        $settings
-            ->setOutputFile(XML_DIR . '/yml.xml')
-            ->setEncoding('UTF-8');
-
-        $shopInfo = new ShopInfo();
-        $shopInfo
-            ->setName($this->parameter('integration_merchant_shop_title', ''))
-            ->setCompany($this->parameter('integration_merchant_company_title', ''))
-            ->setUrl($this->parameter('common_homepage', ''))
-            ->setEmail($this->parameter('smtp_from', null))
-            ->setPlatform('WebSpace Engine CMS');
-
-        $currencies = [];
-        $currencies[] = (new Currency())->setId($this->parameter('integration_merchant_currency', 'RUB'))->setRate(1);
-
-        $categories = [];
-        foreach ($this->prepareCategory($data['category']->sortBy('title')) as $index => $item) {
-            $categories[$item['id']] = (new Category())
-                ->setId($item['id'])
-                ->setParentId($item['parent'])
-                ->setName($item['title']);
-        }
-
-        $offers = [];
-        foreach ($this->prepareProduct($data['product']) as $index => $model) {
-            /**
-             * @var \App\Domain\Entities\Catalog\Category $category
-             * @var \App\Domain\Entities\Catalog\Product  $model
-             */
-            $category = $data['category']->firstWhere('uuid', $model->getCategory());
-
-            $homepage = rtrim($this->parameter('common_homepage', ''), '/');
-            $url = $homepage . '/' . $this->parameter('catalog_address', 'catalog') . '/' . $model->getAddress();
-            $pictures = [];
-
-            foreach ($model->hasFiles() ? $model->getFiles() : ($category && $category->hasFiles() ? $category->getFiles() : []) as $file) {
-                /** @var \App\Domain\Entities\File $file */
-                $pictures[] = $homepage . $file->getPublicPath();
-            }
-
-            $offers[$model->buf] = (new OfferSimple())
-                ->setId($model->buf)
-                ->setVendor($model->getManufacturer() ? $model->getManufacturer() : null)
-                ->setVendorCode($model->getVendorCode() ? $model->getVendorCode() : null)
-                ->setAvailable((bool) $model->getStock())
-                ->setUrl($url)
-                ->setPrice($model->getPrice())
-                ->setCurrencyId($this->parameter('integration_merchant_currency', 'RUB'))
-                ->setCategoryId($category->buf)
-                ->setName($model->getTitle())
-                ->setDescription(
-                    trim(
-                        strip_tags(
-                            $model->getDescription() ?
-                                $model->getDescription() :
-                                (
-                                    $model->getExtra() ?
-                                        $model->getExtra() :
-                                        $model->getTitle()
-                                )
-                        )
-                    )
-                )
-                ->setPictures($pictures);
-        }
-
-        $deliveries = [];
-        $deliveries[] = (new Delivery())
-            ->setCost($this->parameter('integration_merchant_delivery_cost', '0'))
-            ->setDays($this->parameter('integration_merchant_delivery_days', '0'));
-
-        (new Generator($settings))->generate($shopInfo, $currencies, $categories, $offers, $deliveries);
+        $renderer = $this->container->get('view');
+        file_put_contents(XML_DIR . '/yml.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_YML, $data));
 
         $this->setStatusDone();
     }
@@ -124,6 +60,7 @@ class YMLTask extends AbstractTask
             /** @var \App\Domain\Entities\Catalog\Category $model */
             $result[] = [
                 'id' => $model->buf = ++$this->indexCategory,
+                'uuid' => $model->uuid,
                 'parent' => $categories->firstWhere('uuid', $model->getParent())->buf ?? null,
                 'title' => $model->getTitle(),
             ];

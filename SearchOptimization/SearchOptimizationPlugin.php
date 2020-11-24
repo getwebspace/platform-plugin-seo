@@ -2,11 +2,10 @@
 
 namespace Plugin\SearchOptimization;
 
-include_once __DIR__ . '/vendor/autoload.php';
+include_once __DIR__ . '/helper.php';
 
 use App\Domain\AbstractPlugin;
 use Psr\Container\ContainerInterface;
-use samdark\sitemap\Sitemap;
 use Slim\Http\Request;
 use Slim\Http\Response;
 
@@ -17,10 +16,11 @@ class SearchOptimizationPlugin extends AbstractPlugin
     const DESCRIPTION = 'Плагин поисковой оптимизации, генерирует XML файлы: ' .
                         '<a href="/xml/sitemap" target="_blank">SiteMap</a>, ' .
                         '<a href="/xml/gmf" target="_blank">Google Merchant Feed</a>, ' .
-                        '<a href="/xml/yml" target="_blank">Yandex Market</a>';
+                        '<a href="/xml/yml" target="_blank">Yandex Market</a>, ' .
+                        '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://site.0x12f.com';
-    const VERSION = '2.0';
+    const VERSION = '2.1';
 
     public function __construct(ContainerInterface $container)
     {
@@ -41,57 +41,79 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Частота обновления контента',
-            'type' => 'select',
-            'name' => 'frequency',
-            'args' => [
-                'selected' => Sitemap::WEEKLY,
-                'option' => [
-                    Sitemap::ALWAYS => Sitemap::ALWAYS,
-                    Sitemap::HOURLY => Sitemap::HOURLY,
-                    Sitemap::DAILY => Sitemap::DAILY,
-                    Sitemap::WEEKLY => Sitemap::WEEKLY,
-                    Sitemap::MONTHLY => Sitemap::MONTHLY,
-                    Sitemap::YEARLY => Sitemap::YEARLY,
-                    Sitemap::NEVER => Sitemap::NEVER,
-                ],
-            ],
-        ]);
-        $this->addSettingsField([
             'label' => 'Название компании',
+            'description' => '<span class="text-muted">Значение переменной: <i>company_title</i></span>',
             'type' => 'text',
             'name' => 'company_title',
         ]);
         $this->addSettingsField([
             'label' => 'Название магазина',
+            'description' => '<span class="text-muted">Значение переменной: <i>shop_title</i></span>',
             'type' => 'text',
             'name' => 'shop_title',
         ]);
         $this->addSettingsField([
             'label' => 'Описание магазина',
+            'description' => '<span class="text-muted">Значение переменной: <i>shop_description</i></span>',
             'type' => 'text',
             'name' => 'shop_description',
         ]);
         $this->addSettingsField([
             'label' => 'Валюта',
+            'description' => '<span class="text-muted">Значение переменной: <i>currency</i></span>',
             'type' => 'text',
             'name' => 'currency',
         ]);
         $this->addSettingsField([
             'label' => 'Стоимость доставки',
-            'description' => 'Указывается в валюте указанной полем выше',
+            'description' => 'Указывается в валюте указанной полем выше<br>' .
+                             '<span class="text-muted">Значение переменной: <i>delivery_cost</i></span>',
             'type' => 'number',
             'name' => 'delivery_cost',
         ]);
         $this->addSettingsField([
             'label' => 'Срок доставки',
-            'description' => 'Указывается в днях',
+            'description' => 'Указывается в днях<br>' .
+                             '<span class="text-muted">Значение переменной: <i>delivery_days</i></span>',
             'type' => 'number',
             'name' => 'delivery_days',
         ]);
         $this->addSettingsField([
-            'label' => 'Содержимое файла robots.txt',
-            'description' => '<a href="/robots.txt" target="_blank">robots.txt</a>',
+            'label' => 'Twig шаблон SiteMap файла',
+            'description' => 'Документация по <a href="https://en.wikipedia.org/wiki/Sitemaps" target="_blank">формату</a><sup><small>[en]</small></sup><br>' .
+                             '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address, pages, publications, publicationCategories, categories, products</i></span>',
+            'type' => 'textarea',
+            'name' => 'sitemap_txt',
+            'args' => [
+                'value' => DEFAULT_SITEMAP,
+                'style' => 'height: 200px!important;',
+            ],
+        ]);
+        $this->addSettingsField([
+            'label' => 'Twig шаблон GMF файла',
+            'description' => 'Документация по <a href="https://support.google.com/merchants/answer/7052112?hl=ru" target="_blank">формату</a><br>' .
+                             '<span class="text-muted">Возможные переменные: <i>shop_title, shop_description, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+            'type' => 'textarea',
+            'name' => 'gmf_txt',
+            'args' => [
+                'value' => DEFAULT_GMF,
+                'style' => 'height: 200px!important;',
+            ],
+        ]);
+        $this->addSettingsField([
+            'label' => 'Twig шаблон YML файла',
+            'description' => 'Документация по <a href="https://yandex.ru/support/partnermarket/export/yml.html" target="_blank">формату</a><br>' .
+                             '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+            'type' => 'textarea',
+            'name' => 'yml_txt',
+            'args' => [
+                'value' => DEFAULT_YML,
+                'style' => 'height: 200px!important;',
+            ],
+        ]);
+        $this->addSettingsField([
+            'label' => 'Содержимое robots.txt файла',
+            'description' => 'Документация по <a href="https://ru.wikipedia.org/wiki/Стандарт_исключений_для_роботов" target="_blank">формату</a>',
             'type' => 'textarea',
             'name' => 'robots_txt',
             'args' => [
