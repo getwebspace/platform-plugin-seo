@@ -116,12 +116,12 @@ const DEFAULT_YML = <<<EOD
             {% for product in products %}
                 <offer id="{{ product.buf }}">
                     <url>{{ catalog_address }}/{{ product.address }}</url>
-                    <picture>{{ product.getFiles().first().getPublicPath('middle') }}</picture>
+                    {% for file in product.getFiles() %}
+                        <picture>{{ file.getPublicPath('middle') }}</picture>
+                    {% endfor %}
                     <name>{{ product.title }}</name>
                     <description>{{ product.description|striptags }}</description>
                     <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
-                    <param name="Размер">{{ product.field1 }}</param>
-                    <param name="Цвет">{{ product.field2 }}</param>
                     <price>{{ product.price }}</price>
                     <currencyId>{{ currency }}</currencyId>
                     <vendor>{{ product.manufacturer }}</vendor>
@@ -142,6 +142,6 @@ const DEFAULT_ROBOTS = <<<EOD
 User-agent: *
 Allow: /
 Allow: /uploads/
-Disallow: /cup
+Disallow: /cup/
 Sitemap: {{ site_address }}/sitemap.xml
 EOD;
