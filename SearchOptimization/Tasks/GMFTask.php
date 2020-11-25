@@ -32,7 +32,7 @@ class GMFTask extends AbstractTask
         $data = [
             'shop_title' => $this->parameter('SearchOptimizationPlugin_shop_title', ''),
             'shop_description' => $this->parameter('SearchOptimizationPlugin_shop_description', ''),
-            'site_address' => $this->parameter('common_homepage', ''),
+            'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
             'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
             'email' => $this->parameter('smtp_from', ''),
             'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),

@@ -32,7 +32,7 @@ class YMLTask extends AbstractTask
         $data = [
             'shop_title' => $this->parameter('SearchOptimizationPlugin_shop_title', ''),
             'company_title' => $this->parameter('SearchOptimizationPlugin_company_title', ''),
-            'site_address' => $this->parameter('common_homepage', ''),
+            'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
             'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
             'email' => $this->parameter('smtp_from', ''),
             'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),

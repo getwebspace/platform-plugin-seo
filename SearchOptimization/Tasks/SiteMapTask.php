@@ -28,7 +28,7 @@ class SiteMapTask extends AbstractTask
 
         $template = $this->parameter('SearchOptimizationPlugin_sitemap_txt', '');
         $data = [
-            'site_address' => $this->parameter('common_homepage', ''),
+            'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
             'catalog_address' => $this->parameter('catalog_address', 'catalog'),
             'pages' => $pageService->read(),
             'publications' => $publicationService->read(),

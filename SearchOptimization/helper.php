@@ -1,6 +1,6 @@
 <?php
 
-// Содержимое GMF конфига по-умолчанию
+// Содержимое SiteMap конфига по-умолчанию
 const DEFAULT_SITEMAP = <<<EOD
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
@@ -12,21 +12,21 @@ const DEFAULT_SITEMAP = <<<EOD
     </url>
     {% for page in pages %}
         <url>
-            <loc>{{ site_address }}{{ page.address }}</loc>
+            <loc>{{ site_address }}/{{ page.address }}</loc>
             <lastmod>{{ page.date|df('Y-m-d') }}</lastmod>
             <changefreq>monthly</changefreq>
             <priority>0.55</priority>
         </url>
     {% endfor %}
     <url>
-        <loc>{{ site_address }}guestbook</loc>
+        <loc>{{ site_address }}/guestbook</loc>
         <lastmod>{{ df('now', 'Y-m-d') }}</lastmod>
         <changefreq>weekly</changefreq>
         <priority>0.9</priority>
     </url>
     {% for category in publicationCategories %}
         <url>
-            <loc>{{ site_address }}{{ category.address }}</loc>
+            <loc>{{ site_address }}/{{ category.address }}</loc>
             <lastmod>{{ category.date|df('Y-m-d') }}</lastmod>
             <changefreq>monthly</changefreq>
             <priority>0.5</priority>
@@ -34,21 +34,21 @@ const DEFAULT_SITEMAP = <<<EOD
     {% endfor %}
     {% for publication in publications %}
         <url>
-            <loc>{{ site_address }}{{ publication.address }}</loc>
+            <loc>{{ site_address }}/{{ publication.address }}</loc>
             <lastmod>{{ publication.date|df('Y-m-d') }}</lastmod>
             <changefreq>weekly</changefreq>
             <priority>0.6</priority>
         </url>
     {% endfor %}
     <url>
-        <loc>{{ site_address }}{{ catalog_address }}</loc>
+        <loc>{{ site_address }}/{{ catalog_address }}</loc>
         <lastmod>{{ df('now', 'Y-m-d') }}</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.75</priority>
     </url>
     {% for category in catalogCategories %}
         <url>
-            <loc>{{ site_address }}{{ catalog_address }}/{{ category.address }}</loc>
+            <loc>{{ site_address }}/{{ catalog_address }}/{{ category.address }}</loc>
             <lastmod>{{ category.date|df('Y-m-d') }}</lastmod>
             <changefreq>weekly</changefreq>
             <priority>0.7</priority>
@@ -56,7 +56,7 @@ const DEFAULT_SITEMAP = <<<EOD
     {% endfor %}
     {% for product in catalogProducts %}
         <url>
-            <loc>{{ site_address }}{{ catalog_address }}/{{ product.address }}</loc>
+            <loc>{{ site_address }}/{{ catalog_address }}/{{ product.address }}</loc>
             <lastmod>{{ product.date|df('Y-m-d') }}</lastmod>
             <changefreq>weekly</changefreq>
             <priority>0.85</priority>
@@ -137,4 +137,11 @@ const DEFAULT_YML = <<<EOD
 </yml_catalog>
 EOD;
 
-
+// Содержимое robots.txt по-умолчанию
+const DEFAULT_ROBOTS = <<<EOD
+User-agent: *
+Allow: /
+Allow: /uploads/
+Disallow: /cup
+Sitemap: {{ site_address }}/sitemap.xml
+EOD;

@@ -112,11 +112,13 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Содержимое robots.txt файла',
-            'description' => 'Документация по <a href="https://ru.wikipedia.org/wiki/Стандарт_исключений_для_роботов" target="_blank">формату</a>',
+            'label' => 'Twig шаблон robots.txt файла',
+            'description' => 'Документация по <a href="https://ru.wikipedia.org/wiki/Стандарт_исключений_для_роботов" target="_blank">формату</a><br>' .
+                             '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address</i></span>',
             'type' => 'textarea',
             'name' => 'robots_txt',
             'args' => [
+                'value' => DEFAULT_ROBOTS,
                 'style' => 'height: 200px!important;',
             ],
         ]);
@@ -124,9 +126,16 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->map([
             'methods' => ['get'],
             'pattern' => '/robots.txt',
-            'handler' => function (Request $req, Response $res) {
+            'handler' => function (Request $req, Response $res) use ($container) {
+                $renderer = $container->get('view');
+                $clob = $this->parameter('SearchOptimizationPlugin_robots_txt', '');
+                $data = [
+                    'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
+                    'catalog_address' => $this->parameter('catalog_address', 'catalog'),
+                ];
+
                 return $res->withHeader('Content-Type', 'text/plain')->write(
-                    $this->parameter('SearchOptimizationPlugin_robots_txt', '')
+                    $renderer->fetchFromString(trim($clob) ? $clob : DEFAULT_ROBOTS, $data)
                 );
             },
         ]);
