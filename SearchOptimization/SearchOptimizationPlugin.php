@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://site.0x12f.com';
-    const VERSION = '2.1';
+    const VERSION = '2.2';
 
     public function __construct(ContainerInterface $container)
     {
@@ -138,7 +138,8 @@ class SearchOptimizationPlugin extends AbstractPlugin
                     $renderer->fetchFromString(trim($clob) ? $clob : DEFAULT_ROBOTS, $data)
                 );
             },
-        ]);
+        ])->setName('common:seo:robots');
+
         $this->setHandledRoute(
             'cup:catalog:data:import',
             'cup:catalog:category:add',
