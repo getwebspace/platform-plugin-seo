@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://site.0x12f.com';
-    const VERSION = '2.2';
+    const VERSION = '2.3';
 
     public function __construct(ContainerInterface $container)
     {
@@ -176,13 +176,22 @@ class SearchOptimizationPlugin extends AbstractPlugin
                     $task = new \Plugin\SearchOptimization\Tasks\GMFTask($this->container);
                     $task->execute();
 
+                    // run worker
+                    \App\Domain\AbstractTask::worker($task);
+
                     // add task generate YML
                     $task = new \Plugin\SearchOptimization\Tasks\YMLTask($this->container);
                     $task->execute();
 
+                    // run worker
+                    \App\Domain\AbstractTask::worker($task);
+
                     // add task generate SiteMap
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();
+
+                    // run worker
+                    \App\Domain\AbstractTask::worker($task);
 
                     break;
 
@@ -199,11 +208,12 @@ class SearchOptimizationPlugin extends AbstractPlugin
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();
 
+                    // run worker
+                    \App\Domain\AbstractTask::worker($task);
+
                     break;
             }
-
-            // run worker
-            \App\Domain\AbstractTask::worker();
+            ;
         }
 
         return $response;
