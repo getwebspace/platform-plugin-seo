@@ -63,6 +63,7 @@ class YMLTask extends AbstractTask
                 'uuid' => $model->uuid,
                 'parent' => $categories->firstWhere('uuid', $model->getParent())->buf ?? null,
                 'title' => $model->getTitle(),
+                'files' => $model->getFiles(),
             ];
 
             $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
