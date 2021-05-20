@@ -12,15 +12,15 @@ use Slim\Http\Response;
 class SearchOptimizationPlugin extends AbstractPlugin
 {
     const NAME = 'SearchOptimizationPlugin';
-    const TITLE = 'Search optimization';
+    const TITLE = 'Поисковая оптимизация';
     const DESCRIPTION = 'Плагин поисковой оптимизации, генерирует XML файлы: ' .
                         '<a href="/xml/sitemap" target="_blank">SiteMap</a>, ' .
                         '<a href="/xml/gmf" target="_blank">Google Merchant Feed</a>, ' .
                         '<a href="/xml/yml" target="_blank">Yandex Market</a>, ' .
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
-    const AUTHOR_SITE = 'https://site.0x12f.com';
-    const VERSION = '2.3';
+    const AUTHOR_SITE = 'https://getwebspace.org';
+    const VERSION = '2.4';
 
     public function __construct(ContainerInterface $container)
     {
