@@ -75,15 +75,24 @@ const DEFAULT_GMF = <<<EOD
         <description>{{ shop_description }}</description>
         {% for product in products %}
             <item>
-                <g:id>{{ product.id }}</g:id>
+                <g:id>{{ product.buf }}</g:id>
                 <g:title>{{ product.title }}</g:title>
                 <g:description>{{ product.description|striptags }}</g:description>
-                <g:link>{{ catalog_address }}/{{ product.address }}</g:link>
-                <g:image_link>{{ product.getFiles().first().getPublicPath('middle') }}</g:image_link>
+                <g:link>{{ site_address }}{{ catalog_address }}/{{ product.address }}</g:link>
+    
+                {% if product.hasFiles() %}
+                    {% for file in product.getFiles() %}
+                        {% if loop.index0 == 0 %}
+                            <g:image_link>{{ site_address }}{{ file.getPublicPath('middle') }}</g:image_link>
+                        {% else %}
+                            <g:additional_image_link>{{ site_address }}{{ file.getPublicPath('middle') }}</g:additional_image_link>
+                        {% endif %}
+                    {% endfor %}
+                {% endif %}
+    
                 <g:condition>new</g:condition>
                 <g:availability>{{ product.stock > 0 ? 'in stock' : 'out of stock' }}</g:availability>
                 <g:price>{{ product.price }} {{ currency }}</g:price>
-                <g:google_product_category>{{ categories.firstWhere('uuid', product.category).title }}</g:google_product_category>
                 <g:brand>{{ product.manufacturer }}</g:brand>
                 <g:gtin>{{ product.barcode ? product.barcode : '' }}</g:gtin>
             </item>
@@ -106,19 +115,29 @@ const DEFAULT_YML = <<<EOD
         </currencies>
         <categories>
             {% for category in categories %}
-                <category id="{{ category.id }}" parentId="{{ category.parent }}">{{ category.title }}</category>
+                <category id="{{ category.id }}" {{ category.parent ? ('parentId="' ~ category.parent ~ '"')|raw }}>{{ category.title }}</category>
             {% endfor %}
         </categories>
-        <delivery-options>
-            <option cost="{{ delivery_cost }}" days="{{ delivery_days }}"/>
-        </delivery-options>
+        {% if delivery_days %}
+            <delivery-options>
+                <option cost="{{ delivery_cost }}" days="{{ delivery_days }}"/>
+            </delivery-options>
+        {% endif %}
         <offers>
             {% for product in products %}
                 <offer id="{{ product.buf }}">
                     <url>{{ catalog_address }}/{{ product.address }}</url>
-                    {% for file in product.getFiles() %}
-                        <picture>{{ file.getPublicPath('middle') }}</picture>
-                    {% endfor %}
+                    
+                    {% if product.hasFiles() %}
+                        {% for file in product.getFiles() %}
+                            <picture>{{ site_address }}{{ file.getPublicPath('middle') }}</picture>
+                        {% endfor %}
+                    {% else %}
+                        {% for file in categories.firstWhere('uuid', product.category).getFiles() %}
+                            <picture>{{ site_address }}{{ file.getPublicPath() }}</picture>
+                        {% endfor %}
+                    {% endif %}
+                    
                     <name>{{ product.title }}</name>
                     <description>{{ product.description|striptags }}</description>
                     <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
@@ -129,7 +148,6 @@ const DEFAULT_YML = <<<EOD
                     <barcode>{{ product.barcode ? product.barcode : '' }}</barcode>
                     <country_of_origin>{{ product.country }}</country_of_origin>
                     <weight>{{ product.volume }}</weight>
-                    <sales_notes></sales_notes>
                 </offer>
             {% endfor %}
         </offers>
