@@ -163,7 +163,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
     /** {@inheritdoc} */
     public function after(\Slim\Http\Request $request, \Slim\Http\Response $response, string $routeName): \Slim\Http\Response
     {
-        if ($request->isPost()) {
+        if ($request->isPost() && $this->parameter('SearchOptimizationPlugin_enable', 'off') === 'on') {
             switch ($routeName) {
                 case 'cup:catalog:data:import':
                 case 'cup:catalog:category:add':
