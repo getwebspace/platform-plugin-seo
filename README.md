@@ -1,14 +1,14 @@
-SearchOptimization для WebSpace Engine
+SearchOptimization for WebSpace Engine
 ====
-_(Плагин)_
+_(Plugin)_
 
-Плагин поисковой оптимизации, генерирует XML файлы: SiteMap, Google Merchant Feed, Yandex Market
+Search engine optimization plugin, generates XML files: SiteMap, Google Merchant Feed, Yandex Market
 
-#### Установка
-Поместить в папку `plugin` и подключить в `index.php` добавив строку:
+#### Install
+Put in `plugin` folder and setup in `index.php` file:
 ```php
 // clearcache plugin
-$plugins->register(new \Plugin\SearchOptimization\SearchOptimizationPlugin($container));
+$plugins->register(\Plugin\SearchOptimization\SearchOptimizationPlugin::class);
 ```
 
 #### License

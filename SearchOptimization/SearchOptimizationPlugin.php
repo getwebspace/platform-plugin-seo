@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '2.4';
+    const VERSION = '3.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -161,7 +161,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
     }
 
     /** {@inheritdoc} */
-    public function after(\Slim\Http\Request $request, \Slim\Http\Response $response, string $routeName): \Slim\Http\Response
+    public function after(\Slim\Psr7\Request $request, \Slim\Psr7\Response $response, string $routeName): \Slim\Psr7\Response
     {
         if ($request->isPost() && $this->parameter('SearchOptimizationPlugin_enable', 'off') === 'on') {
             switch ($routeName) {
