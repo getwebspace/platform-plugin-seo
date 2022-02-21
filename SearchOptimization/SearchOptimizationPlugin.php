@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '3.0';
+    const VERSION = '3.1';
 
     public function __construct(ContainerInterface $container)
     {
@@ -134,9 +134,11 @@ class SearchOptimizationPlugin extends AbstractPlugin
                     'catalog_address' => $this->parameter('catalog_address', 'catalog'),
                 ];
 
-                return $res->withHeader('Content-Type', 'text/plain')->write(
+                $res->getBody()->write(
                     $renderer->fetchFromString(trim($clob) ? $clob : DEFAULT_ROBOTS, $data)
                 );
+
+                return $res->withHeader('Content-Type', 'text/plain');
             },
         ])->setName('common:seo:robots');
 
@@ -163,7 +165,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
     /** {@inheritdoc} */
     public function after(\Slim\Psr7\Request $request, \Slim\Psr7\Response $response, string $routeName): \Slim\Psr7\Response
     {
-        if ($request->isPost() && $this->parameter('SearchOptimizationPlugin_enable', 'off') === 'on') {
+        if ($request->getMethod() == 'post' && $this->parameter('SearchOptimizationPlugin_enable', 'off') === 'on') {
             switch ($routeName) {
                 case 'cup:catalog:data:import':
                 case 'cup:catalog:category:add':
