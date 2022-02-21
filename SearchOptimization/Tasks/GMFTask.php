@@ -34,7 +34,7 @@ class GMFTask extends AbstractTask
             'shop_description' => $this->parameter('SearchOptimizationPlugin_shop_description', ''),
             'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
             'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
-            'email' => $this->parameter('smtp_from', ''),
+            'email' => $this->parameter('mail_from', ''),
             'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),
             'delivery_cost' => $this->parameter('SearchOptimizationPlugin_delivery_cost', ''),
             'delivery_days' => $this->parameter('SearchOptimizationPlugin_delivery_days', ''),
