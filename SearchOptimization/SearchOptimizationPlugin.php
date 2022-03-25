@@ -20,13 +20,14 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '3.1';
+    const VERSION = '4.0';
 
     public function __construct(ContainerInterface $container)
     {
         parent::__construct($container);
 
         $this->setTemplateFolder(__DIR__ . '/templates');
+        $this->addTwigExtension(\Plugin\SearchOptimization\SearchOptimizationPluginTwigExt::class);
         $this->addToolbarItem(['twig' => 'seo.twig']);
         $this->addSettingsField([
             'label' => 'Автоматический запуск',
