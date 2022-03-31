@@ -161,5 +161,5 @@ User-agent: *
 Allow: /
 Allow: /uploads/
 Disallow: /cup/
-Sitemap: {{ site_address }}/sitemap.xml
+Sitemap: {{ site_address }}/xml/sitemap
 EOD;
