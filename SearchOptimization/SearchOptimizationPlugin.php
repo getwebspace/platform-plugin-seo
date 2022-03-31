@@ -2,7 +2,7 @@
 
 namespace Plugin\SearchOptimization;
 
-include_once __DIR__ . '/helper.php';
+include_once PLUGIN_DIR . '/SearchOptimization/helper.php';
 
 use App\Domain\AbstractPlugin;
 use Psr\Container\ContainerInterface;
