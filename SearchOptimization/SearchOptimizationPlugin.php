@@ -26,6 +26,8 @@ class SearchOptimizationPlugin extends AbstractPlugin
     {
         parent::__construct($container);
 
+        $self = $this;
+
         $this->setTemplateFolder(__DIR__ . '/templates');
         $this->addTwigExtension(\Plugin\SearchOptimization\SearchOptimizationPluginTwigExt::class);
         $this->addToolbarItem(['twig' => 'seo.twig']);
@@ -127,12 +129,12 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->map([
             'methods' => ['get'],
             'pattern' => '/robots.txt',
-            'handler' => function (Request $req, Response $res) use ($container) {
+            'handler' => function (Request $req, Response $res) use ($container, $self) {
                 $renderer = $container->get('view');
-                $clob = $this->parameter('SearchOptimizationPlugin_robots_txt', '');
+                $clob = $self->parameter('SearchOptimizationPlugin_robots_txt', '');
                 $data = [
-                    'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
-                    'catalog_address' => $this->parameter('catalog_address', 'catalog'),
+                    'site_address' => rtrim($self->parameter('common_homepage', ''), '/'),
+                    'catalog_address' => $self->parameter('catalog_address', 'catalog'),
                 ];
 
                 $res->getBody()->write(
