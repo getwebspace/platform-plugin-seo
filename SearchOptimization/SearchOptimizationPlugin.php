@@ -6,8 +6,8 @@ include_once __DIR__ . '/helper.php';
 
 use App\Domain\AbstractPlugin;
 use Psr\Container\ContainerInterface;
-use Slim\Http\Request;
-use Slim\Http\Response;
+use Slim\Psr7\Request;
+use Slim\Psr7\Response;
 
 class SearchOptimizationPlugin extends AbstractPlugin
 {
@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '4.0';
+    const VERSION = '4.0.1';
 
     public function __construct(ContainerInterface $container)
     {
