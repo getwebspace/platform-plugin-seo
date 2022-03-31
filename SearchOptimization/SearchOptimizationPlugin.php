@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '4.0.1';
+    const VERSION = '4.0.2';
 
     public function __construct(ContainerInterface $container)
     {
