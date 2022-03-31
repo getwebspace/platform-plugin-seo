@@ -52,7 +52,7 @@ class GMFTask extends AbstractTask
 
     protected $indexCategory = 0;
 
-    protected function prepareCategory(Collection &$categories, $parent = \Ramsey\Uuid\Uuid::NIL)
+    protected function prepareCategory(Collection $categories, $parent = \Ramsey\Uuid\Uuid::NIL)
     {
         $result = [];
 
