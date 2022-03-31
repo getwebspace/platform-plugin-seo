@@ -25,8 +25,8 @@ class GMFTask extends AbstractTask
 
     protected function action(array $args = []): void
     {
-        $categoryService = \App\Domain\Service\Catalog\CategoryService::getWithContainer($this->container);
-        $productService = \App\Domain\Service\Catalog\ProductService::getWithContainer($this->container);
+        $categoryService = $this->container->get(\App\Domain\Service\Catalog\CategoryService::class);
+        $productService = $this->container->get(\App\Domain\Service\Catalog\ProductService::class);
 
         $template = $this->parameter('SearchOptimizationPlugin_gmf_txt', '');
         $data = [

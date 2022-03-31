@@ -20,11 +20,11 @@ class SiteMapTask extends AbstractTask
 
     protected function action(array $args = []): void
     {
-        $pageService = \App\Domain\Service\Page\PageService::getWithContainer($this->container);
-        $publicationService = \App\Domain\Service\Publication\PublicationService::getWithContainer($this->container);
-        $publicationCategoryService = \App\Domain\Service\Publication\CategoryService::getWithContainer($this->container);
-        $categoryService = \App\Domain\Service\Catalog\CategoryService::getWithContainer($this->container);
-        $productService = \App\Domain\Service\Catalog\ProductService::getWithContainer($this->container);
+        $pageService = $this->container->get(\App\Domain\Service\Page\PageService::class);
+        $publicationService = $this->container->get(\App\Domain\Service\Publication\PublicationService::class);
+        $publicationCategoryService = $this->container->get(\App\Domain\Service\Publication\CategoryService::class);
+        $categoryService = $this->container->get(\App\Domain\Service\Catalog\CategoryService::class);
+        $productService = $this->container->get(\App\Domain\Service\Catalog\ProductService::class);
 
         $template = $this->parameter('SearchOptimizationPlugin_sitemap_txt', '');
         $data = [
