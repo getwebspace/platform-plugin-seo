@@ -20,7 +20,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '4.1';
+    const VERSION = '5.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -145,82 +145,48 @@ class SearchOptimizationPlugin extends AbstractPlugin
             },
         ])->setName('common:seo:robots');
 
-        $this->setHandledRoute(
-            'cup:catalog:data:import',
-            'cup:catalog:category:add',
-            'cup:catalog:category:edit',
-            'cup:catalog:category:delete',
-            'cup:catalog:product:add',
-            'cup:catalog:product:edit',
-            'cup:catalog:product:delete',
-            'cup:page:add',
-            'cup:page:edit',
-            'cup:page:delete',
-            'cup:publication:add',
-            'cup:publication:edit',
-            'cup:publication:delete',
-            'cup:publication:category:add',
-            'cup:publication:category:edit',
-            'cup:publication:category:delete',
-        );
-    }
-
-    /** {@inheritdoc} */
-    public function after(\Slim\Psr7\Request $request, \Slim\Psr7\Response $response, string $routeName): \Slim\Psr7\Response
-    {
-        if ($request->getMethod() == 'post' && $this->parameter('SearchOptimizationPlugin_enable', 'off') === 'on') {
-            switch ($routeName) {
-                case 'cup:catalog:data:import':
-                case 'cup:catalog:category:add':
-                case 'cup:catalog:category:edit':
-                case 'cup:catalog:category:delete':
-                case 'cup:catalog:product:add':
-                case 'cup:catalog:product:edit':
-                case 'cup:catalog:product:delete':
-                    // add task generate GMF
+        $this
+            ->subscribe(
+                [
+                    'cup:catalog:data:import',
+                    'cup:catalog:category:add',
+                    'cup:catalog:category:edit',
+                    'cup:catalog:category:delete',
+                    'cup:catalog:product:add',
+                    'cup:catalog:product:edit',
+                    'cup:catalog:product:delete'
+                ],
+                function () {
                     $task = new \Plugin\SearchOptimization\Tasks\GMFTask($this->container);
                     $task->execute();
-
-                    // run worker
                     \App\Domain\AbstractTask::worker($task);
 
-                    // add task generate YML
                     $task = new \Plugin\SearchOptimization\Tasks\YMLTask($this->container);
                     $task->execute();
-
-                    // run worker
                     \App\Domain\AbstractTask::worker($task);
 
-                    // add task generate SiteMap
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();
-
-                    // run worker
                     \App\Domain\AbstractTask::worker($task);
-
-                    break;
-
-                case 'cup:page:add':
-                case 'cup:page:edit':
-                case 'cup:page:delete':
-                case 'cup:publication:add':
-                case 'cup:publication:edit':
-                case 'cup:publication:delete':
-                case 'cup:publication:category:add':
-                case 'cup:publication:category:edit':
-                case 'cup:publication:category:delete':
-                    // add task generate SiteMap
+                }
+            )
+            ->subscribe(
+                [
+                    'cup:page:add',
+                    'cup:page:edit',
+                    'cup:page:delete',
+                    'cup:publication:add',
+                    'cup:publication:edit',
+                    'cup:publication:delete',
+                    'cup:publication:category:add',
+                    'cup:publication:category:edit',
+                    'cup:publication:category:delete'
+                ],
+                function () {
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();
-
-                    // run worker
                     \App\Domain\AbstractTask::worker($task);
-
-                    break;
-            }
-            ;
-        }
-
-        return $response;
+                }
+            );
     }
 }
