@@ -74,14 +74,20 @@ class YMLTask extends AbstractTask
 
     protected $indexProduct = 0;
 
+
     protected function prepareProduct(Collection $products)
     {
+        $result = [];
+
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
-            $model->setDescription(str_replace('&nbsp;', '', strip_tags($model->getDescription())));
-            $model->buf = ++$this->indexProduct;
+            $buf = $model->toArray();
+            $buf['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $buf['buf'] = $model->getExternalId() ? $model->getExternalId() : ++$this->indexProduct;
+
+            $result[] = $buf;
         }
 
-        return $products;
+        return $result;
     }
 }
