@@ -82,7 +82,7 @@ class YMLTask extends AbstractTask
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
             $buf = $model->toArray();
-            $buf['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $buf['description'] = str_replace('&nbsp;', '', strip_tags(str_replace('</', ' </', $model->getDescription())));
             $buf['buf'] = $model->getExternalId() ? $model->getExternalId() : ++$this->indexProduct;
 
             $result[] = $buf;
