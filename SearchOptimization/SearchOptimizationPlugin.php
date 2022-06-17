@@ -28,8 +28,8 @@ class SearchOptimizationPlugin extends AbstractPlugin
 
         $self = $this;
 
+        $this->setHandledRoute('common:main');
         $this->setTemplateFolder(__DIR__ . '/templates');
-        $this->addTwigExtension(\Plugin\SearchOptimization\SearchOptimizationPluginTwigExt::class);
         $this->addToolbarItem(['twig' => 'seo.twig']);
         $this->addSettingsField([
             'label' => 'Автоматический запуск',
@@ -70,21 +70,21 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Стоимость доставки',
             'description' => 'Указывается в валюте указанной полем выше<br>' .
-                             '<span class="text-muted">Значение переменной: <i>delivery_cost</i></span>',
+                '<span class="text-muted">Значение переменной: <i>delivery_cost</i></span>',
             'type' => 'number',
             'name' => 'delivery_cost',
         ]);
         $this->addSettingsField([
             'label' => 'Срок доставки',
             'description' => 'Указывается в днях<br>' .
-                             '<span class="text-muted">Значение переменной: <i>delivery_days</i></span>',
+                '<span class="text-muted">Значение переменной: <i>delivery_days</i></span>',
             'type' => 'number',
             'name' => 'delivery_days',
         ]);
         $this->addSettingsField([
             'label' => 'Twig шаблон SiteMap файла',
             'description' => 'Документация по <a href="https://en.wikipedia.org/wiki/Sitemaps" target="_blank">формату</a><sup><small>[en]</small></sup><br>' .
-                             '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address, pages, publications, publicationCategories, categories, products</i></span>',
+                '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address, pages, publications, publicationCategories, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'sitemap_txt',
             'args' => [
@@ -95,7 +95,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Twig шаблон GMF файла',
             'description' => 'Документация по <a href="https://support.google.com/merchants/answer/7052112?hl=ru" target="_blank">формату</a><br>' .
-                             '<span class="text-muted">Возможные переменные: <i>shop_title, shop_description, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+                '<span class="text-muted">Возможные переменные: <i>shop_title, shop_description, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'gmf_txt',
             'args' => [
@@ -106,7 +106,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Twig шаблон YML файла',
             'description' => 'Документация по <a href="https://yandex.ru/support/partnermarket/export/yml.html" target="_blank">формату</a><br>' .
-                             '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+                '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'yml_txt',
             'args' => [
@@ -117,7 +117,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Twig шаблон robots.txt файла',
             'description' => 'Документация по <a href="https://ru.wikipedia.org/wiki/Стандарт_исключений_для_роботов" target="_blank">формату</a><br>' .
-                             '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address</i></span>',
+                '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address</i></span>',
             'type' => 'textarea',
             'name' => 'robots_txt',
             'args' => [
@@ -147,15 +147,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
 
         $this
             ->subscribe(
-                [
-                    'cup:catalog:data:import',
-                    'cup:catalog:category:add',
-                    'cup:catalog:category:edit',
-                    'cup:catalog:category:delete',
-                    'cup:catalog:product:add',
-                    'cup:catalog:product:edit',
-                    'cup:catalog:product:delete'
-                ],
+                ['task:catalog:import', 'cup:catalog:category:create', 'cup:catalog:category:edit', 'cup:catalog:category:delete', 'cup:catalog:product:create', 'cup:catalog:product:edit', 'cup:catalog:product:delete'],
                 function () {
                     $task = new \Plugin\SearchOptimization\Tasks\GMFTask($this->container);
                     $task->execute();
@@ -171,17 +163,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                 }
             )
             ->subscribe(
-                [
-                    'cup:page:add',
-                    'cup:page:edit',
-                    'cup:page:delete',
-                    'cup:publication:add',
-                    'cup:publication:edit',
-                    'cup:publication:delete',
-                    'cup:publication:category:add',
-                    'cup:publication:category:edit',
-                    'cup:publication:category:delete'
-                ],
+                ['cup:page:add', 'cup:page:edit', 'cup:page:delete', 'cup:publication:add', 'cup:publication:edit', 'cup:publication:delete', 'cup:publication:category:add', 'cup:publication:category:edit', 'cup:publication:category:delete'],
                 function () {
                     $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
                     $task->execute();

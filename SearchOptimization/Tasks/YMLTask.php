@@ -47,6 +47,7 @@ class YMLTask extends AbstractTask
         $renderer = $this->container->get('view');
         file_put_contents(XML_DIR . '/yml.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_YML, $data));
 
+        $this->container->get(\App\Application\PubSub::class)->publish('task:seo:yml');
         $this->setStatusDone();
     }
 
@@ -74,20 +75,14 @@ class YMLTask extends AbstractTask
 
     protected $indexProduct = 0;
 
-
     protected function prepareProduct(Collection $products)
     {
-        $result = [];
-
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
-            $buf = $model->toArray();
-            $buf['description'] = str_replace('&nbsp;', '', strip_tags(str_replace('</', ' </', $model->getDescription())));
-            $buf['buf'] = $model->getExternalId() ? $model->getExternalId() : ++$this->indexProduct;
-
-            $result[] = $buf;
+            $model->setDescription(str_replace('&nbsp;', '', strip_tags($model->getDescription())));
+            $model->buf = ++$this->indexProduct;
         }
 
-        return $result;
+        return $products;
     }
 }

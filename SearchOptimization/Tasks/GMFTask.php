@@ -47,6 +47,7 @@ class GMFTask extends AbstractTask
         $renderer = $this->container->get('view');
         file_put_contents(XML_DIR . '/gmf.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_GMF, $data));
 
+        $this->container->get(\App\Application\PubSub::class)->publish('task:seo:gmf');
         $this->setStatusDone();
     }
 

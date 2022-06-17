@@ -7,7 +7,7 @@ Search engine optimization plugin, generates XML files: SiteMap, Google Merchant
 #### Install
 Put in `plugin` folder and setup in `index.php` file:
 ```php
-// clearcache plugin
+// searchengine plugin
 $plugins->register(\Plugin\SearchOptimization\SearchOptimizationPlugin::class);
 ```
 
