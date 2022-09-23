@@ -9,9 +9,9 @@ use Illuminate\Support\Collection;
 
 include_once PLUGIN_DIR . '/SearchOptimization/helper.php';
 
-class GMFTask extends AbstractTask
+class YandexYMLTask extends AbstractTask
 {
-    public const TITLE = 'Генерация Google XML файла';
+    public const TITLE = 'Генерация Yandex YML файла';
 
     public function execute(array $params = []): \App\Domain\Entities\Task
     {
@@ -28,10 +28,10 @@ class GMFTask extends AbstractTask
         $categoryService = $this->container->get(\App\Domain\Service\Catalog\CategoryService::class);
         $productService = $this->container->get(\App\Domain\Service\Catalog\ProductService::class);
 
-        $template = $this->parameter('SearchOptimizationPlugin_gmf_txt', '');
+        $template = $this->parameter('SearchOptimizationPlugin_yml_txt', '');
         $data = [
             'shop_title' => $this->parameter('SearchOptimizationPlugin_shop_title', ''),
-            'shop_description' => $this->parameter('SearchOptimizationPlugin_shop_description', ''),
+            'company_title' => $this->parameter('SearchOptimizationPlugin_company_title', ''),
             'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
             'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
             'email' => $this->parameter('mail_from', ''),
@@ -46,9 +46,9 @@ class GMFTask extends AbstractTask
         $data['products'] = $this->prepareProduct($data['products']);
 
         $renderer = $this->container->get('view');
-        file_put_contents(XML_DIR . '/gmf.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_GMF, $data));
+        file_put_contents(XML_DIR . '/yml.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_YANDEX_YML, $data));
 
-        $this->container->get(\App\Application\PubSub::class)->publish('task:seo:gmf');
+        $this->container->get(\App\Application\PubSub::class)->publish('task:seo:yml');
         $this->setStatusDone();
     }
 
@@ -65,6 +65,7 @@ class GMFTask extends AbstractTask
                 'uuid' => $model->uuid,
                 'parent' => $categories->firstWhere('uuid', $model->getParent())->buf ?? null,
                 'title' => $model->getTitle(),
+                'files' => $model->getFiles(),
             ];
 
             $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
@@ -79,6 +80,7 @@ class GMFTask extends AbstractTask
     {
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
+            $model->setDescription(str_replace('&nbsp;', '', strip_tags($model->getDescription())));
             $model->buf = ++$this->indexProduct;
         }
 

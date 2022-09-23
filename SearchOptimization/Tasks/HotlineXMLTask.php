@@ -9,9 +9,9 @@ use Illuminate\Support\Collection;
 
 include_once PLUGIN_DIR . '/SearchOptimization/helper.php';
 
-class YMLTask extends AbstractTask
+class HotlineXMLTask extends AbstractTask
 {
-    public const TITLE = 'Генерация YML файла';
+    public const TITLE = 'Генерация Hotline XML файла';
 
     public function execute(array $params = []): \App\Domain\Entities\Task
     {
@@ -28,13 +28,14 @@ class YMLTask extends AbstractTask
         $categoryService = $this->container->get(\App\Domain\Service\Catalog\CategoryService::class);
         $productService = $this->container->get(\App\Domain\Service\Catalog\ProductService::class);
 
-        $template = $this->parameter('SearchOptimizationPlugin_yml_txt', '');
+        $template = $this->parameter('SearchOptimizationPlugin_htl_txt', '');
         $data = [
             'shop_title' => $this->parameter('SearchOptimizationPlugin_shop_title', ''),
             'company_title' => $this->parameter('SearchOptimizationPlugin_company_title', ''),
             'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
             'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
             'email' => $this->parameter('mail_from', ''),
+            'shop_id' => $this->parameter('SearchOptimizationPlugin_shop_id', ''),
             'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),
             'delivery_cost' => $this->parameter('SearchOptimizationPlugin_delivery_cost', ''),
             'delivery_days' => $this->parameter('SearchOptimizationPlugin_delivery_days', ''),
@@ -45,7 +46,7 @@ class YMLTask extends AbstractTask
         $data['products'] = $this->prepareProduct($data['products']);
 
         $renderer = $this->container->get('view');
-        file_put_contents(XML_DIR . '/yml.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_YML, $data));
+        file_put_contents(XML_DIR . '/htl.xml', $renderer->fetchFromString(trim($template) ? $template : DEFAULT_HLI_XML, $data));
 
         $this->container->get(\App\Application\PubSub::class)->publish('task:seo:yml');
         $this->setStatusDone();

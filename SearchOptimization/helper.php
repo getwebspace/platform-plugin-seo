@@ -101,8 +101,8 @@ const DEFAULT_GMF = <<<EOD
 </rss>
 EOD;
 
-// Содержимое YML конфига по-умолчанию
-const DEFAULT_YML = <<<EOD
+// Содержимое Yandex YML конфига по-умолчанию
+const DEFAULT_YANDEX_YML = <<<EOD
 <?xml version="1.0" encoding="UTF-8"?>
 <yml_catalog date="{{ df('now', 'Y-m-d H:m') }}">
     <shop>
@@ -145,7 +145,7 @@ const DEFAULT_YML = <<<EOD
                     <currencyId>{{ currency }}</currencyId>
                     <vendor>{{ product.manufacturer }}</vendor>
                     <vendorCode>{{ product.vendorcode }}</vendorCode>
-                    <barcode>{{ product.barcode ? product.barcode : '' }}</barcode>
+                    <barcode>{{ product.barcode }}</barcode>
                     <country_of_origin>{{ product.country }}</country_of_origin>
                     <weight>{{ product.volume }}</weight>
                 </offer>
@@ -153,6 +153,51 @@ const DEFAULT_YML = <<<EOD
         </offers>
     </shop>
 </yml_catalog>
+EOD;
+
+// Содержимое Hotline конфига по-умолчанию
+const DEFAULT_HLI_XML = <<<EOD
+<?xml version="1.0" encoding="UTF-8" ?>
+<price>
+    <date>{{ df('now', 'Y-m-d H:m') }}</date>
+    <firmName>{{ company_title }}</firmName>
+    <firmId>{{ shop_id }}</firmId>
+    <categories>
+        {% for category in categories %}
+            <category>
+                <id>{{ category.id }}</id>
+                <parentId>{{ category.parent }}</parentId>
+                <name>{{ category.title }}</name>
+            </category>
+        {% endfor %}
+    </categories>
+    <items>
+        {% for product in products %}
+            <item>
+                <id>{{ product.buf }}</id>
+                <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
+                <code>{{ product.vendorcode }}</code>
+                <barcode>{{ product.barcode }}</barcode>
+                <vendor>{{ product.manufacturer }}</vendor>
+                <name>{{ product.title }}</name>
+                <description>{{ product.description }}</description>
+                <url>{{ catalog_address }}/{{ product.address }}</url>
+                {% if product.hasFiles() %}
+                    {% for file in product.getFiles() %}
+                        <image>{{ site_address }}{{ file.getPublicPath('middle') }}</image>
+                    {% endfor %}
+                {% else %}
+                    {% for file in categories.firstWhere('uuid', product.category).getFiles() %}
+                        <image>{{ site_address }}{{ file.getPublicPath() }}</image>
+                    {% endfor %}
+                {% endif %}
+                <priceRUAH>{{ product.price }}</priceRUAH>
+                <stock>{{ product.stock ? product.stock : 'Під замовлення' }}</stock>
+                <param name="Країна виготовлення">{{ product.country }}</param>
+            </item>
+        {% endfor %}
+    </items>
+</price> 
 EOD;
 
 // Содержимое robots.txt по-умолчанию

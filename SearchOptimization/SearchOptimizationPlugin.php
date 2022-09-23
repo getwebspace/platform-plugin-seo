@@ -17,10 +17,11 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/xml/sitemap" target="_blank">SiteMap</a>, ' .
                         '<a href="/xml/gmf" target="_blank">Google Merchant Feed</a>, ' .
                         '<a href="/xml/yml" target="_blank">Yandex Market</a>, ' .
+                        '<a href="/xml/htl" target="_blank">Hotline</a>, ' .
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '5.0';
+    const VERSION = '5.1';
 
     public function __construct(ContainerInterface $container)
     {
@@ -62,6 +63,12 @@ class SearchOptimizationPlugin extends AbstractPlugin
             'name' => 'shop_description',
         ]);
         $this->addSettingsField([
+            'label' => 'ID (код) магазина Hotline',
+            'description' => '<span class="text-muted">Значение переменной: <i>shop_id</i></span>',
+            'type' => 'text',
+            'name' => 'shop_id',
+        ]);
+        $this->addSettingsField([
             'label' => 'Валюта',
             'description' => '<span class="text-muted">Значение переменной: <i>currency</i></span>',
             'type' => 'text',
@@ -95,7 +102,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Twig шаблон GMF файла',
             'description' => 'Документация по <a href="https://support.google.com/merchants/answer/7052112?hl=ru" target="_blank">формату</a><br>' .
-                '<span class="text-muted">Возможные переменные: <i>shop_title, shop_description, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+                '<span class="text-muted">Возможные переменные: <i>shop_title, shop_description, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'gmf_txt',
             'args' => [
@@ -104,13 +111,24 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Twig шаблон YML файла',
+            'label' => 'Twig шаблон Yandex YML файла',
             'description' => 'Документация по <a href="https://yandex.ru/support/partnermarket/export/yml.html" target="_blank">формату</a><br>' .
-                '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+                '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'yml_txt',
             'args' => [
-                'value' => DEFAULT_YML,
+                'value' => DEFAULT_YANDEX_YML,
+                'style' => 'height: 200px!important;',
+            ],
+        ]);
+        $this->addSettingsField([
+            'label' => 'Twig шаблон Hotline YML файла',
+            'description' => 'Документация по <a href="https://hotline.ua/about/pricelists_specs/" target="_blank">формату</a><br>' .
+                '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+            'type' => 'textarea',
+            'name' => 'htl_txt',
+            'args' => [
+                'value' => DEFAULT_YANDEX_YML,
                 'style' => 'height: 200px!important;',
             ],
         ]);
@@ -153,7 +171,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                     $task->execute();
                     \App\Domain\AbstractTask::worker($task);
 
-                    $task = new \Plugin\SearchOptimization\Tasks\YMLTask($this->container);
+                    $task = new \Plugin\SearchOptimization\Tasks\YandexYMLTask($this->container);
                     $task->execute();
                     \App\Domain\AbstractTask::worker($task);
 
