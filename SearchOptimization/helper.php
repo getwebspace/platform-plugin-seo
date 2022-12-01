@@ -139,7 +139,7 @@ const DEFAULT_YANDEX_YML = <<<EOD
                     {% endif %}
                     
                     <name>{{ product.title }}</name>
-                    <description>{{ product.description|striptags }}</description>
+                    <description>{{ product.description }}</description>
                     <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
                     <price>{{ product.price }}</price>
                     <currencyId>{{ currency }}</currencyId>

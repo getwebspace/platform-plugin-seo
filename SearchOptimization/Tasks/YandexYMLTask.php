@@ -78,12 +78,17 @@ class YandexYMLTask extends AbstractTask
 
     protected function prepareProduct(Collection $products)
     {
+        $list = [];
+
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
-            $model->setDescription(str_replace('&nbsp;', '', strip_tags($model->getDescription())));
-            $model->buf = ++$this->indexProduct;
+            $item = $model->toArray();
+            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $item['buf'] = ++$this->indexProduct;
+
+            $list[] = $item;
         }
 
-        return $products;
+        return $list;
     }
 }
