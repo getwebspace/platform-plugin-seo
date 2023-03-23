@@ -11,7 +11,7 @@ include_once PLUGIN_DIR . '/SearchOptimization/helper.php';
 
 class GMFTask extends AbstractTask
 {
-    public const TITLE = 'Генерация Google XML файла';
+    public const TITLE = 'Generate Google XML';
 
     public function execute(array $params = []): \App\Domain\Entities\Task
     {

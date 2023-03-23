@@ -11,7 +11,7 @@ include_once PLUGIN_DIR . '/SearchOptimization/helper.php';
 
 class HotlineXMLTask extends AbstractTask
 {
-    public const TITLE = 'Генерация Hotline XML файла';
+    public const TITLE = 'Generate Hotline XML';
 
     public function execute(array $params = []): \App\Domain\Entities\Task
     {
@@ -60,14 +60,12 @@ class HotlineXMLTask extends AbstractTask
 
         foreach ($categories->where('parent', $parent) as $model) {
             /** @var \App\Domain\Entities\Catalog\Category $model */
-            $result[] = [
-                'id' => $model->buf = ++$this->indexCategory,
-                'uuid' => $model->uuid,
-                'parent' => $categories->firstWhere('uuid', $model->getParent())->buf ?? null,
-                'title' => $model->getTitle(),
-                'files' => $model->getFiles(),
-            ];
+            $item = $model->toArray();
+            $item['parent'] = $categories->firstWhere('uuid', $model->getParent())->buf ?? null;
+            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $item['buf'] = ++$this->indexCategory;
 
+            $result[] = $item;
             $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
         }
 
@@ -78,7 +76,7 @@ class HotlineXMLTask extends AbstractTask
 
     protected function prepareProduct(Collection $products)
     {
-        $list = [];
+        $result = [];
 
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
@@ -86,9 +84,9 @@ class HotlineXMLTask extends AbstractTask
             $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
             $item['buf'] = ++$this->indexProduct;
 
-            $list[] = $item;
+            $result[] = $item;
         }
 
-        return $list;
+        return $result;
     }
 }

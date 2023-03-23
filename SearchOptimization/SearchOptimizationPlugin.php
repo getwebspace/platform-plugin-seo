@@ -12,8 +12,8 @@ use Slim\Psr7\Response;
 class SearchOptimizationPlugin extends AbstractPlugin
 {
     const NAME = 'SearchOptimizationPlugin';
-    const TITLE = 'Поисковая оптимизация';
-    const DESCRIPTION = 'Плагин поисковой оптимизации, генерирует XML файлы: ' .
+    const TITLE = 'Search optimization';
+    const DESCRIPTION = 'Plugin for generation XML/YML files: ' .
                         '<a href="/xml/sitemap" target="_blank">SiteMap</a>, ' .
                         '<a href="/xml/gmf" target="_blank">Google Merchant Feed</a>, ' .
                         '<a href="/xml/yml" target="_blank">Yandex Market</a>, ' .
@@ -21,7 +21,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '5.1';
+    const VERSION = '6.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -33,65 +33,65 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->setTemplateFolder(__DIR__ . '/templates');
         $this->addToolbarItem(['twig' => 'seo.twig']);
         $this->addSettingsField([
-            'label' => 'Автоматический запуск',
-            'description' => 'Генерировать XML файлы автоматически после каждого изменения в страницах, публикациях и продуктах каталога',
+            'label' => 'Autorun',
+            'description' => 'Generate XML files automatically after every change in pages, posts and catalog products',
             'type' => 'select',
             'name' => 'enable',
             'args' => [
                 'option' => [
-                    'off' => 'Нет',
-                    'on' => 'Да',
+                    'off' => 'Off',
+                    'on' => 'On',
                 ],
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Название компании',
-            'description' => '<span class="text-muted">Значение переменной: <i>company_title</i></span>',
+            'label' => 'Company name',
+            'description' => '<span class="text-muted">Variable value: <i>company_title</i></span>',
             'type' => 'text',
             'name' => 'company_title',
         ]);
         $this->addSettingsField([
-            'label' => 'Название магазина',
-            'description' => '<span class="text-muted">Значение переменной: <i>shop_title</i></span>',
+            'label' => 'Name of shop',
+            'description' => '<span class="text-muted">Variable value: <i>shop_title</i></span>',
             'type' => 'text',
             'name' => 'shop_title',
         ]);
         $this->addSettingsField([
-            'label' => 'Описание магазина',
-            'description' => '<span class="text-muted">Значение переменной: <i>shop_description</i></span>',
+            'label' => 'Store Description',
+            'description' => '<span class="text-muted">Variable value: <i>shop_description</i></span>',
             'type' => 'text',
             'name' => 'shop_description',
         ]);
         $this->addSettingsField([
-            'label' => 'ID (код) магазина Hotline',
-            'description' => '<span class="text-muted">Значение переменной: <i>shop_id</i></span>',
+            'label' => 'ID (code) of the store on Hotline',
+            'description' => '<span class="text-muted">Variable value: <i>shop_id</i></span>',
             'type' => 'text',
             'name' => 'shop_id',
         ]);
         $this->addSettingsField([
-            'label' => 'Валюта',
-            'description' => '<span class="text-muted">Значение переменной: <i>currency</i></span>',
+            'label' => 'Currency',
+            'description' => '<span class="text-muted">Variable value: <i>currency</i></span>',
             'type' => 'text',
             'name' => 'currency',
         ]);
         $this->addSettingsField([
-            'label' => 'Стоимость доставки',
-            'description' => 'Указывается в валюте указанной полем выше<br>' .
-                '<span class="text-muted">Значение переменной: <i>delivery_cost</i></span>',
+            'label' => 'Cost of delivery',
+            'description' => 'Indicated in the currency indicated by the field above<br>' .
+                '<span class="text-muted">Variable value: <i>delivery_cost</i></span>',
             'type' => 'number',
             'name' => 'delivery_cost',
         ]);
         $this->addSettingsField([
-            'label' => 'Срок доставки',
-            'description' => 'Указывается в днях<br>' .
-                '<span class="text-muted">Значение переменной: <i>delivery_days</i></span>',
+            'label' => 'Delivery period',
+            'description' => 'Specified in days<br>' .
+                '<span class="text-muted">Variable value: <i>delivery_days</i></span>',
             'type' => 'number',
             'name' => 'delivery_days',
         ]);
         $this->addSettingsField([
-            'label' => 'Twig шаблон SiteMap файла',
-            'description' => 'Документация по <a href="https://en.wikipedia.org/wiki/Sitemaps" target="_blank">формату</a><sup><small>[en]</small></sup><br>' .
-                '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address, pages, publications, publicationCategories, categories, products</i></span>',
+            'label' => 'Twig template file SiteMap',
+            'description' => 'Documentation <a href="https://en.wikipedia.org/wiki/Sitemaps" target="_blank">format</a><br>' .
+                '<span class="text-muted">Possible variables: <i>site_address, catalog_address, pages, publications, publicationCategories, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'sitemap_txt',
             'args' => [
@@ -100,9 +100,9 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Twig шаблон GMF файла',
-            'description' => 'Документация по <a href="https://support.google.com/merchants/answer/7052112?hl=ru" target="_blank">формату</a><br>' .
-                '<span class="text-muted">Возможные переменные: <i>shop_title, shop_description, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+            'label' => 'Twig template file GMF',
+            'description' => 'Documentation <a href="https://support.google.com/merchants/answer/7052112?hl=en" target="_blank">format</a><br>' .
+                '<span class="text-muted">Possible variables: <i>shop_title, shop_description, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'gmf_txt',
             'args' => [
@@ -111,9 +111,9 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Twig шаблон Yandex YML файла',
-            'description' => 'Документация по <a href="https://yandex.ru/support/partnermarket/export/yml.html" target="_blank">формату</a><br>' .
-                '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+            'label' => 'Twig template file Yandex YML',
+            'description' => 'Documentation <a href="https://yandex.ru/support/partnermarket/export/yml.html" target="_blank">format</a><sup><small>[ru]</small></sup><br>' .
+                '<span class="text-muted">Possible variables: <i>shop_title, company_title, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'yml_txt',
             'args' => [
@@ -122,9 +122,9 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Twig шаблон Hotline YML файла',
-            'description' => 'Документация по <a href="https://hotline.ua/about/pricelists_specs/" target="_blank">формату</a><br>' .
-                '<span class="text-muted">Возможные переменные: <i>shop_title, company_title, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+            'label' => 'Twig template file Hotline YML',
+            'description' => 'Documentation <a href="https://hotline.ua/about/pricelists_specs/" target="_blank">format</a><sup><small>[ua]</small></sup><br>' .
+                '<span class="text-muted">Possible variables: <i>shop_title, company_title, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
             'type' => 'textarea',
             'name' => 'htl_txt',
             'args' => [
@@ -133,9 +133,9 @@ class SearchOptimizationPlugin extends AbstractPlugin
             ],
         ]);
         $this->addSettingsField([
-            'label' => 'Twig шаблон robots.txt файла',
-            'description' => 'Документация по <a href="https://ru.wikipedia.org/wiki/Стандарт_исключений_для_роботов" target="_blank">формату</a><br>' .
-                '<span class="text-muted">Возможные переменные: <i>site_address, catalog_address</i></span>',
+            'label' => 'Twig template file robots.txt',
+            'description' => 'Documentation <a href="https://en.wikipedia.org/wiki/Robots.txt" target="_blank">format</a><br>' .
+                '<span class="text-muted">Possible variables: <i>site_address, catalog_address</i></span>',
             'type' => 'textarea',
             'name' => 'robots_txt',
             'args' => [

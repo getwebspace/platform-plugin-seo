@@ -6,7 +6,7 @@ use App\Domain\AbstractTask;
 
 class SiteMapTask extends AbstractTask
 {
-    public const TITLE = 'Генерация карты сайта';
+    public const TITLE = 'Generate SiteMap';
 
     public function execute(array $params = []): \App\Domain\Entities\Task
     {

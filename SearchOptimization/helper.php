@@ -80,13 +80,13 @@ const DEFAULT_GMF = <<<EOD
                 <g:description>{{ product.description|striptags }}</g:description>
                 <g:link>{{ site_address }}{{ catalog_address }}/{{ product.address }}</g:link>
     
-                {% if product.hasFiles() %}
-                    {% for file in product.getFiles() %}
-                        {% if loop.index0 == 0 %}
-                            <g:image_link>{{ site_address }}{{ file.getPublicPath('middle') }}</g:image_link>
-                        {% else %}
-                            <g:additional_image_link>{{ site_address }}{{ file.getPublicPath('middle') }}</g:additional_image_link>
-                        {% endif %}
+                {% if product.files|count %}
+                    {% for file in product.files %}
+                        <picture>{{ site_address }}{{ file.path.middle }}</picture>
+                    {% endfor %}
+                {% else %}
+                    {% for file in categories.firstWhere('uuid', product.category).files|count %}
+                        <picture>{{ site_address }}{{ file.path.middle }}</picture>
                     {% endfor %}
                 {% endif %}
     
@@ -128,13 +128,13 @@ const DEFAULT_YANDEX_YML = <<<EOD
                 <offer id="{{ product.buf }}">
                     <url>{{ catalog_address }}/{{ product.address }}</url>
                     
-                    {% if product.hasFiles() %}
-                        {% for file in product.getFiles() %}
-                            <picture>{{ site_address }}{{ file.getPublicPath('middle') }}</picture>
+                    {% if product.files|count %}
+                        {% for file in product.files %}
+                            <picture>{{ site_address }}{{ file.path.middle }}</picture>
                         {% endfor %}
                     {% else %}
-                        {% for file in categories.firstWhere('uuid', product.category).getFiles() %}
-                            <picture>{{ site_address }}{{ file.getPublicPath() }}</picture>
+                        {% for file in categories.firstWhere('uuid', product.category).files|count %}
+                            <picture>{{ site_address }}{{ file.path.middle }}</picture>
                         {% endfor %}
                     {% endif %}
                     
