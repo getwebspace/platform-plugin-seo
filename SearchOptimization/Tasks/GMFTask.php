@@ -60,12 +60,12 @@ class GMFTask extends AbstractTask
 
         foreach ($categories->where('parent', $parent) as $model) {
             /** @var \App\Domain\Entities\Catalog\Category $model */
-            $result[] = [
-                'id' => $model->buf = ++$this->indexCategory,
-                'uuid' => $model->uuid,
-                'parent' => $categories->firstWhere('uuid', $model->getParent())->buf ?? null,
-                'title' => $model->getTitle(),
-            ];
+            $item = $model->toArray();
+            $item['parent'] = $categories->firstWhere('uuid', $parent)->buf ?? null;
+            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $model->buf = $item['id'] = $item['buf'] = ++$this->indexCategory;
+
+            $result[] = $item;
 
             $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
         }
@@ -77,11 +77,17 @@ class GMFTask extends AbstractTask
 
     protected function prepareProduct(Collection $products)
     {
+        $result = [];
+
         foreach ($products as $model) {
             /** @var \App\Domain\Entities\Catalog\Product $model */
-            $model->buf = ++$this->indexProduct;
+            $item = $model->toArray();
+            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $model->buf = $item['id'] = $item['buf'] = ++$this->indexProduct;
+
+            $result[] = $item;
         }
 
-        return $products;
+        return $result;
     }
 }

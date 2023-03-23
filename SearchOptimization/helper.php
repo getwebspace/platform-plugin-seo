@@ -75,20 +75,18 @@ const DEFAULT_GMF = <<<EOD
         <description>{{ shop_description }}</description>
         {% for product in products %}
             <item>
-                <g:id>{{ product.buf }}</g:id>
+                <g:id>{{ product.id }}</g:id>
                 <g:title>{{ product.title }}</g:title>
                 <g:description>{{ product.description|striptags }}</g:description>
                 <g:link>{{ site_address }}{{ catalog_address }}/{{ product.address }}</g:link>
     
-                {% if product.files|count %}
-                    {% for file in product.files %}
-                        <picture>{{ site_address }}{{ file.path.middle }}</picture>
-                    {% endfor %}
-                {% else %}
-                    {% for file in categories.firstWhere('uuid', product.category).files|count %}
-                        <picture>{{ site_address }}{{ file.path.middle }}</picture>
-                    {% endfor %}
-                {% endif %}
+                {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
+                    {% if loop.index0 == 0 %}
+                        <g:image_link>{{ site_address }}{{ file.path.middle }}</g:image_link>
+                    {% else %}
+                        <g:additional_image_link>{{ site_address }}{{ file.path.middle }}</g:additional_image_link>
+                    {% endif %}
+                {% endfor %}
     
                 <g:condition>new</g:condition>
                 <g:availability>{{ product.stock > 0 ? 'in stock' : 'out of stock' }}</g:availability>
@@ -125,22 +123,16 @@ const DEFAULT_YANDEX_YML = <<<EOD
         {% endif %}
         <offers>
             {% for product in products %}
-                <offer id="{{ product.buf }}">
-                    <url>{{ catalog_address }}/{{ product.address }}</url>
-                    
-                    {% if product.files|count %}
-                        {% for file in product.files %}
-                            <picture>{{ site_address }}{{ file.path.middle }}</picture>
-                        {% endfor %}
-                    {% else %}
-                        {% for file in categories.firstWhere('uuid', product.category).files|count %}
-                            <picture>{{ site_address }}{{ file.path.middle }}</picture>
-                        {% endfor %}
-                    {% endif %}
-                    
+                <offer id="{{ product.id }}">
                     <name>{{ product.title }}</name>
-                    <description>{{ product.description }}</description>
+                    <url>{{ catalog_address }}/{{ product.address }}</url>
                     <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
+                    
+                    {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
+                        <picture>{{ site_address }}{{ file.path.middle }}</picture>
+                    {% endfor %}
+                    
+                    <description>{{ product.description }}</description>
                     <price>{{ product.price }}</price>
                     <currencyId>{{ currency }}</currencyId>
                     <vendor>{{ product.manufacturer }}</vendor>
@@ -174,7 +166,7 @@ const DEFAULT_HLI_XML = <<<EOD
     <items>
         {% for product in products %}
             <item>
-                <id>{{ product.buf }}</id>
+                <id>{{ product.id }}</id>
                 <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
                 <code>{{ product.vendorcode }}</code>
                 <barcode>{{ product.barcode }}</barcode>
@@ -182,15 +174,11 @@ const DEFAULT_HLI_XML = <<<EOD
                 <name>{{ product.title }}</name>
                 <description>{{ product.description }}</description>
                 <url>{{ catalog_address }}/{{ product.address }}</url>
-                {% if product.hasFiles() %}
-                    {% for file in product.getFiles() %}
-                        <image>{{ site_address }}{{ file.getPublicPath('middle') }}</image>
-                    {% endfor %}
-                {% else %}
-                    {% for file in categories.firstWhere('uuid', product.category).getFiles() %}
-                        <image>{{ site_address }}{{ file.getPublicPath() }}</image>
-                    {% endfor %}
-                {% endif %}
+                
+                {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
+                    <picture>{{ site_address }}{{ file.path.middle }}</picture>
+                {% endfor %}
+                
                 <priceRUAH>{{ product.price }}</priceRUAH>
                 <stock>{{ product.stock ? product.stock : 'Під замовлення' }}</stock>
                 <param name="Країна виготовлення">{{ product.country }}</param>

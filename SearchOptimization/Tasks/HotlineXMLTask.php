@@ -61,9 +61,9 @@ class HotlineXMLTask extends AbstractTask
         foreach ($categories->where('parent', $parent) as $model) {
             /** @var \App\Domain\Entities\Catalog\Category $model */
             $item = $model->toArray();
-            $item['parent'] = $categories->firstWhere('uuid', $model->getParent())->buf ?? null;
+            $item['parent'] = $categories->firstWhere('uuid', $parent)->buf ?? null;
             $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
-            $item['id'] = $item['buf'] = ++$this->indexCategory;
+            $model->buf = $item['id'] = $item['buf'] = ++$this->indexCategory;
 
             $result[] = $item;
             $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
@@ -82,7 +82,7 @@ class HotlineXMLTask extends AbstractTask
             /** @var \App\Domain\Entities\Catalog\Product $model */
             $item = $model->toArray();
             $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
-            $item['id'] = $item['buf'] = ++$this->indexProduct;
+            $model->buf = $item['id'] = $item['buf'] = ++$this->indexProduct;
 
             $result[] = $item;
         }
