@@ -63,7 +63,7 @@ class HotlineXMLTask extends AbstractTask
             $item = $model->toArray();
             $item['parent'] = $categories->firstWhere('uuid', $model->getParent())->buf ?? null;
             $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
-            $item['buf'] = ++$this->indexCategory;
+            $item['id'] = $item['buf'] = ++$this->indexCategory;
 
             $result[] = $item;
             $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
@@ -82,7 +82,7 @@ class HotlineXMLTask extends AbstractTask
             /** @var \App\Domain\Entities\Catalog\Product $model */
             $item = $model->toArray();
             $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
-            $item['buf'] = ++$this->indexProduct;
+            $item['id'] = $item['buf'] = ++$this->indexProduct;
 
             $result[] = $item;
         }
