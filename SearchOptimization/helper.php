@@ -191,8 +191,11 @@ EOD;
 // Содержимое robots.txt по-умолчанию
 const DEFAULT_ROBOTS = <<<EOD
 User-agent: *
+Host: {{ site_address }}
 Allow: /
 Allow: /uploads/
+Disallow: /cart/
+Disallow: /cart/done/
 Disallow: /cup/
 Sitemap: {{ site_address }}/xml/sitemap
 EOD;
