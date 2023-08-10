@@ -192,10 +192,8 @@ EOD;
 const DEFAULT_ROBOTS = <<<EOD
 User-agent: *
 Host: {{ site_address }}
-Allow: /
-Allow: /uploads/
 Disallow: /cart/
-Disallow: /cart/done/
+Disallow: /search/
 Disallow: /cup/
 Sitemap: {{ site_address }}/xml/sitemap
 EOD;
