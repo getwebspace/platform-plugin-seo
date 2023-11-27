@@ -21,7 +21,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '6.2';
+    const VERSION = '7.0.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -29,7 +29,6 @@ class SearchOptimizationPlugin extends AbstractPlugin
 
         $self = $this;
 
-        $this->setHandledRoute('common:main');
         $this->setTemplateFolder(__DIR__ . '/templates');
         $this->addToolbarItem(['twig' => 'seo.twig']);
         $this->addSettingsField([
