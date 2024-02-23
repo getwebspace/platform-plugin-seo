@@ -54,11 +54,11 @@ class HotlineXMLTask extends AbstractTask
 
     protected $indexCategory = 0;
 
-    protected function prepareCategory(Collection $categories, $parent = \Ramsey\Uuid\Uuid::NIL)
+    protected function prepareCategory(Collection $categories, $parent = null)
     {
         $result = [];
 
-        foreach ($categories->where('parent', $parent) as $model) {
+        foreach ($categories->where('parent_uuid', $parent) as $model) {
             /** @var \App\Domain\Entities\Catalog\Category $model */
             $item = $model->toArray();
             $item['parent'] = $categories->firstWhere('uuid', $parent)->buf ?? null;
