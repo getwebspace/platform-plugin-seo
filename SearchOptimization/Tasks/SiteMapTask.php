@@ -8,7 +8,7 @@ class SiteMapTask extends AbstractTask
 {
     public const TITLE = 'Generate SiteMap';
 
-    public function execute(array $params = []): \App\Domain\Entities\Task
+    public function execute(array $params = []): \App\Domain\Models\Task
     {
         $default = [
             // nothing
@@ -33,8 +33,8 @@ class SiteMapTask extends AbstractTask
             'pages' => $pageService->read(),
             'publications' => $publicationService->read(),
             'publicationCategories' => $publicationCategoryService->read(),
-            'catalogCategories' => $categoryService->read(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK]),
-            'catalogProducts' => $productService->read(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK]),
+            'catalogCategories' => $categoryService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
+            'catalogProducts' => $productService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
         ];
 
         $renderer = $this->container->get('view');

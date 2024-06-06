@@ -8,6 +8,7 @@ use App\Domain\AbstractPlugin;
 use Psr\Container\ContainerInterface;
 use Slim\Psr7\Request;
 use Slim\Psr7\Response;
+use Slim\Views\Twig;
 
 class SearchOptimizationPlugin extends AbstractPlugin
 {
@@ -127,7 +128,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
             'type' => 'textarea',
             'name' => 'htl_txt',
             'args' => [
-                'value' => DEFAULT_YANDEX_YML,
+                'value' => DEFAULT_HLI_XML,
                 'style' => 'height: 200px!important;',
             ],
         ]);

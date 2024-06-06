@@ -13,7 +13,7 @@ class YandexYMLTask extends AbstractTask
 {
     public const TITLE = 'Generate Yandex YML';
 
-    public function execute(array $params = []): \App\Domain\Entities\Task
+    public function execute(array $params = []): \App\Domain\Models\Task
     {
         $default = [
             // nothing
@@ -39,8 +39,8 @@ class YandexYMLTask extends AbstractTask
             'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),
             'delivery_cost' => $this->parameter('SearchOptimizationPlugin_delivery_cost', ''),
             'delivery_days' => $this->parameter('SearchOptimizationPlugin_delivery_days', ''),
-            'categories' => $categoryService->read(['status' => \App\Domain\Types\Catalog\CategoryStatusType::STATUS_WORK]),
-            'products' => $productService->read(['status' => \App\Domain\Types\Catalog\ProductStatusType::STATUS_WORK]),
+            'categories' => $categoryService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
+            'products' => $productService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
         ];
         $data['categories'] = collect($this->prepareCategory($data['categories']->sortBy('title')));
         $data['products'] = $this->prepareProduct($data['products']);
@@ -59,14 +59,14 @@ class YandexYMLTask extends AbstractTask
         $result = [];
 
         foreach ($categories->where('parent_uuid', $parent) as $model) {
-            /** @var \App\Domain\Entities\Catalog\Category $model */
+            /** @var \App\Domain\Models\Catalog\Category $model */
             $item = $model->toArray();
             $item['parent'] = $categories->firstWhere('uuid', $parent)->buf ?? null;
-            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->description));
             $model->buf = $item['id'] = $item['buf'] = ++$this->indexCategory;
 
             $result[] = $item;
-            $result = array_merge($result, $this->prepareCategory($categories, $model->getUuid()));
+            $result = array_merge($result, $this->prepareCategory($categories, $model->uuid));
         }
 
         return $result;
@@ -79,9 +79,9 @@ class YandexYMLTask extends AbstractTask
         $result = [];
 
         foreach ($products as $model) {
-            /** @var \App\Domain\Entities\Catalog\Product $model */
+            /** @var \App\Domain\Models\Catalog\Product $model */
             $item = $model->toArray();
-            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->getDescription()));
+            $item['description'] = str_replace('&nbsp;', '', strip_tags($model->description));
             $model->buf = $item['id'] = $item['buf'] = ++$this->indexProduct;
 
             $result[] = $item;
