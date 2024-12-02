@@ -126,9 +126,9 @@ const DEFAULT_YANDEX_YML = <<<EOD
                 <offer id="{{ product.id }}">
                     <name>{{ product.title }}</name>
                     <url>{{ catalog_address }}/{{ product.address }}</url>
-                    <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
+                    <categoryId>{{ categories.firstWhere('uuid', product.category_uuid).id }}</categoryId>
                     
-                    {% for file in (product.files ?? categories.firstWhere('uuid', ).files ?? []) %}
+                    {% for file in (product.files ?? product.category.files ?? []) %}
                         <picture>{{ site_address }}{{ file.path.middle }}</picture>
                     {% endfor %}
                     
