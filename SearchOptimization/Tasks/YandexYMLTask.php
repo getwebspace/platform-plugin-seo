@@ -39,7 +39,7 @@ class YandexYMLTask extends AbstractTask
             'currency' => $this->parameter('SearchOptimizationPlugin_currency', ''),
             'delivery_cost' => $this->parameter('SearchOptimizationPlugin_delivery_cost', ''),
             'delivery_days' => $this->parameter('SearchOptimizationPlugin_delivery_days', ''),
-            'categories' => $categoryService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
+            'categories' => $categoryService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK, 'is_hidden' => false]),
             'products' => $productService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
         ];
         $data['categories'] = collect($this->prepareCategory($data['categories']->sortBy('title')));

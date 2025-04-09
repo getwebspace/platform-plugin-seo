@@ -33,7 +33,7 @@ class SiteMapTask extends AbstractTask
             'pages' => $pageService->read(),
             'publications' => $publicationService->read(),
             'publicationCategories' => $publicationCategoryService->read(),
-            'catalogCategories' => $categoryService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
+            'catalogCategories' => $categoryService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK, 'is_hidden' => false]),
             'catalogProducts' => $productService->read(['status' => \App\Domain\Casts\Catalog\Status::WORK]),
         ];
 
