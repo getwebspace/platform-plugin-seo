@@ -102,7 +102,7 @@ EOD;
 // Содержимое Yandex YML конфига по-умолчанию
 const DEFAULT_YANDEX_YML = <<<EOD
 <?xml version="1.0" encoding="UTF-8"?>
-<yml_catalog date="{{ df('now', 'Y-m-d H:m') }}">
+<yml_catalog date="{{ df('now', 'Y-m-d H:i') }}">
     <shop>
         <name>{{ shop_title }}</name>
         <company>{{ company_title }}</company>
@@ -151,7 +151,7 @@ EOD;
 const DEFAULT_HLI_XML = <<<EOD
 <?xml version="1.0" encoding="UTF-8" ?>
 <price>
-    <date>{{ df('now', 'Y-m-d H:m') }}</date>
+    <date>{{ df('now', 'Y-m-d H:i') }}</date>
     <firmName>{{ company_title }}</firmName>
     <firmId>{{ shop_id }}</firmId>
     <categories>
