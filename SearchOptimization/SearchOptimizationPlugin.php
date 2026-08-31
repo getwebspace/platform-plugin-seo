@@ -22,7 +22,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '8.1.2';
+    const VERSION = '9.0.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -31,6 +31,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $self = $this;
 
         $this->setTemplateFolder(__DIR__ . '/templates');
+        $this->addTwigExtension(SearchOptimizationPluginTwigExt::class);
         $this->addToolbarItem(['twig' => 'seo.twig']);
         $this->addSettingsField([
             'label' => 'Autorun',
@@ -91,7 +92,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Twig template file SiteMap',
             'description' => 'Documentation <a href="https://en.wikipedia.org/wiki/Sitemaps" target="_blank">format</a><br>' .
-                '<span class="text-muted">Possible variables: <i>site_address, catalog_address, pages, publications, publicationCategories, categories, products</i></span>',
+                '<span class="text-muted">Possible variables: <i>site_address, catalog_address, pages, publications, publicationCategories, catalogCategories, catalogProducts</i></span>',
             'type' => 'textarea',
             'name' => 'sitemap_txt',
             'args' => [
@@ -163,29 +164,62 @@ class SearchOptimizationPlugin extends AbstractPlugin
             },
         ])->setName('common:seo:robots');
 
+        // Queue a set of generator tasks, but only while "Autorun" is enabled —
+        // the manual toolbar buttons stay available regardless of this switch.
+        // A regeneration that is already queued is left alone: a burst of
+        // catalog edits then costs one rebuild per feed, not one per edit.
+        $runFeeds = function (array $tasks): void {
+            if ($this->parameter('SearchOptimizationPlugin_enable', 'off') !== 'on') {
+                return;
+            }
+
+            $taskService = $this->container->get(\App\Domain\Service\Task\TaskService::class);
+
+            foreach ($tasks as $class) {
+                $pending = $taskService->read([
+                    'action' => $class,
+                    'status' => [\App\Domain\Casts\Task\Status::QUEUE],
+                ]);
+
+                if ($pending->count()) {
+                    continue;
+                }
+
+                $task = new $class($this->container);
+                $task->execute();
+                \App\Domain\AbstractTask::worker($task);
+            }
+        };
+
         $this
             ->subscribe(
-                ['task:catalog:import', 'cup:catalog:category:create', 'cup:catalog:category:edit', 'cup:catalog:category:delete', 'cup:catalog:product:create', 'cup:catalog:product:edit', 'cup:catalog:product:delete'],
-                function () {
-                    $task = new \Plugin\SearchOptimization\Tasks\GMFTask($this->container);
-                    $task->execute();
-                    \App\Domain\AbstractTask::worker($task);
-
-                    $task = new \Plugin\SearchOptimization\Tasks\YandexYMLTask($this->container);
-                    $task->execute();
-                    \App\Domain\AbstractTask::worker($task);
-
-                    $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
-                    $task->execute();
-                    \App\Domain\AbstractTask::worker($task);
+                [
+                    'task:catalog:import',
+                    'cup:catalog:category:create', 'cup:catalog:category:edit', 'cup:catalog:category:delete',
+                    'cup:catalog:product:create', 'cup:catalog:product:edit', 'cup:catalog:product:delete',
+                    'api:catalog:category:create', 'api:catalog:category:edit', 'api:catalog:category:delete',
+                    'api:catalog:product:create', 'api:catalog:product:edit', 'api:catalog:product:delete',
+                ],
+                function () use ($runFeeds) {
+                    $runFeeds([
+                        \Plugin\SearchOptimization\Tasks\GMFTask::class,
+                        \Plugin\SearchOptimization\Tasks\YandexYMLTask::class,
+                        \Plugin\SearchOptimization\Tasks\HotlineXMLTask::class,
+                        \Plugin\SearchOptimization\Tasks\SiteMapTask::class,
+                    ]);
                 }
             )
             ->subscribe(
-                ['cup:page:add', 'cup:page:edit', 'cup:page:delete', 'cup:publication:add', 'cup:publication:edit', 'cup:publication:delete', 'cup:publication:category:add', 'cup:publication:category:edit', 'cup:publication:category:delete'],
-                function () {
-                    $task = new \Plugin\SearchOptimization\Tasks\SiteMapTask($this->container);
-                    $task->execute();
-                    \App\Domain\AbstractTask::worker($task);
+                [
+                    'cup:page:create', 'cup:page:edit', 'cup:page:delete',
+                    'cup:publication:create', 'cup:publication:edit', 'cup:publication:delete',
+                    'cup:publication:category:create', 'cup:publication:category:edit', 'cup:publication:category:delete',
+                    'api:page:create', 'api:page:edit', 'api:page:delete',
+                    'api:publication:create', 'api:publication:edit', 'api:publication:delete',
+                    'api:publication:category:create', 'api:publication:category:edit', 'api:publication:category:delete',
+                ],
+                function () use ($runFeeds) {
+                    $runFeeds([\Plugin\SearchOptimization\Tasks\SiteMapTask::class]);
                 }
             );
     }

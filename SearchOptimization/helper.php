@@ -125,10 +125,10 @@ const DEFAULT_YANDEX_YML = <<<EOD
             {% for product in products %}
                 <offer id="{{ product.id }}">
                     <name>{{ product.title }}</name>
-                    <url>{{ catalog_address }}/{{ product.address }}</url>
-                    <categoryId>{{ categories.firstWhere('uuid', product.category_uuid).id }}</categoryId>
-                    
-                    {% for file in (product.files ?? product.category.files ?? []) %}
+                    <url>{{ site_address }}{{ catalog_address }}/{{ product.address }}</url>
+                    <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
+
+                    {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
                         <picture>{{ site_address }}{{ file.path.middle }}</picture>
                     {% endfor %}
                     
@@ -173,8 +173,8 @@ const DEFAULT_HLI_XML = <<<EOD
                 <vendor>{{ product.manufacturer }}</vendor>
                 <name>{{ product.title }}</name>
                 <description>{{ product.description }}</description>
-                <url>{{ catalog_address }}/{{ product.address }}</url>
-                
+                <url>{{ site_address }}{{ catalog_address }}/{{ product.address }}</url>
+
                 {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
                     <picture>{{ site_address }}{{ file.path.middle }}</picture>
                 {% endfor %}
