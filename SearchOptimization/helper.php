@@ -93,9 +93,10 @@ const DEFAULT_GMF = <<<EOD
         {% for product in products %}
             <item>
                 <g:id>{{ product.id }}</g:id>
-                <g:title>{{ product.title }}</g:title>
+                {% if product.group_id %}<g:item_group_id>{{ product.group_id }}</g:item_group_id>{% endif %}
+                <g:title>{{ product.title }}{% if product.group_id and product.variant_label %} ({{ product.variant_label }}){% endif %}</g:title>
                 <g:description>{{ product.description|striptags }}</g:description>
-                <g:link>{{ site_address }}{{ catalog_address }}/{{ product.address }}</g:link>
+                <g:link>{{ site_address }}{{ product.url }}</g:link>
     
                 {% for url in product.images %}
                     {% if loop.first %}
@@ -140,9 +141,9 @@ const DEFAULT_YANDEX_YML = <<<EOD
         {% endif %}
         <offers>
             {% for product in products %}
-                <offer id="{{ product.id }}">
-                    <name>{{ product.title }}</name>
-                    <url>{{ site_address }}{{ catalog_address }}/{{ product.address }}</url>
+                <offer id="{{ product.id }}"{% if product.group_id %} group_id="{{ product.group_id }}"{% endif %}>
+                    <name>{{ product.title }}{% if product.group_id and product.variant_label %} ({{ product.variant_label }}){% endif %}</name>
+                    <url>{{ site_address }}{{ product.url }}</url>
                     <categoryId>{{ product.category_id }}</categoryId>
 
                     {% for url in product.images %}
@@ -188,9 +189,9 @@ const DEFAULT_HLI_XML = <<<EOD
                 <code>{{ product.vendorcode }}</code>
                 <barcode>{{ product.barcode }}</barcode>
                 <vendor>{{ product.manufacturer }}</vendor>
-                <name>{{ product.title }}</name>
+                <name>{{ product.title }}{% if product.group_id and product.variant_label %} ({{ product.variant_label }}){% endif %}</name>
                 <description>{{ product.description }}</description>
-                <url>{{ site_address }}{{ catalog_address }}/{{ product.address }}</url>
+                <url>{{ site_address }}{{ product.url }}</url>
 
                 {% for url in product.images %}
                     <picture>{{ url }}</picture>

@@ -170,8 +170,9 @@ abstract class AbstractFeedTask extends AbstractTask
     }
 
     /**
-     * Besides the fields of the product: `id` (stable), `category_id` (the id of its category in
-     * the feed) and `images`, absolute addresses of its pictures (those of its category when it
+     * Besides the fields of the product: `id` (stable), `url` (with `?v=` for a variant),
+     * `group_id` (shared by the variants, null for the others), `variant_label`, `category_id`
+     * (the id of its category in the feed) and `images`, absolute addresses of its pictures (those of its category when it
      * has none). Products of a category that is not in the feed are left out.
      */
     protected function prepareProduct(Collection $products, Collection $categories): array
@@ -204,6 +205,9 @@ abstract class AbstractFeedTask extends AbstractTask
             $item['description'] = str_replace('&nbsp;', '', strip_tags((string) $model->description));
             $item['id'] = $item['buf'] = $this->productId((string) $model->uuid);
             $item['category_id'] = $this->categoryIds[$category];
+            // variants (products of one address) form a group in the feeds: a number of at most 9
+            // digits that follows the address, so it does not change when one of them is removed
+            $item['group_id'] = $model->has_variants() ? hexdec(substr(sha1($model->canonical_url()), 0, 7)) : null;
             $item['images'] = $pictures($model) ?: $pictures($byUuid[$category]);
 
             $result[] = $item;

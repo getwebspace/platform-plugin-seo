@@ -15,6 +15,8 @@ $plugins->register(\Plugin\SearchOptimization\SearchOptimizationPlugin::class);
 `shop_title`, `shop_description`, `company_title`, `site_address` (with a scheme, no trailing slash), `email`, `shop_id`,
 `currency`, `catalog_address`, `delivery_cost`, `delivery_days`, `categories`, `products`.
 
+Of a product also `url` (the path of its page, `?v=` for a variant, put it after `site_address`), `group_id` (the same number for the variants of one product, empty for the others; it follows the address, so it stays when a variant is removed) and `variant_label`. The default Yandex YML and Google templates use them (`group_id`, `item_group_id`) and name a variant `Title (label)`.
+
 Of a category: `id`, `parent` (the id of the parent), `title`, `description`. Of a product, besides its catalog fields:
 `id`, `category_id` and `images` (absolute addresses of its pictures, those of its category when it has none).
 The ids are derived from the uuid, so they stay the same when something is added or removed.
