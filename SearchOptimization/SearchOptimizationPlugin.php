@@ -22,7 +22,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                         '<a href="/robots.txt" target="_blank">robots.txt</a>';
     const AUTHOR = 'Aleksey Ilyin';
     const AUTHOR_SITE = 'https://getwebspace.org';
-    const VERSION = '9.0.0';
+    const VERSION = '10.0.0';
 
     public function __construct(ContainerInterface $container)
     {
@@ -103,7 +103,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
         $this->addSettingsField([
             'label' => 'Twig template file GMF',
             'description' => 'Documentation <a href="https://support.google.com/merchants/answer/7052112?hl=en" target="_blank">format</a><br>' .
-                '<span class="text-muted">Possible variables: <i>shop_title, shop_description, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i></span>',
+                '<span class="text-muted">Possible variables: <i>shop_title, shop_description, site_address, email, shop_id, currency, catalog_address, delivery_cost, delivery_days, categories, products</i><br>Of a product: <i>id, category_id, images</i> (absolute addresses), the rest as in the catalog</span>',
             'type' => 'textarea',
             'name' => 'gmf_txt',
             'args' => [
@@ -152,7 +152,7 @@ class SearchOptimizationPlugin extends AbstractPlugin
                 $renderer = $container->get('view');
                 $clob = $self->parameter('SearchOptimizationPlugin_robots_txt', '');
                 $data = [
-                    'site_address' => rtrim($self->parameter('common_homepage', ''), '/'),
+                    'site_address' => seo_site_address($self->parameter('common_homepage', '')),
                     'catalog_address' => $self->parameter('catalog_address', 'catalog'),
                 ];
 

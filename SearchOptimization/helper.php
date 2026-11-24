@@ -1,9 +1,26 @@
 <?php
 
+/**
+ * The site address as the feeds need it: with a scheme and without the trailing slash,
+ * whatever was typed into the "common_homepage" parameter ("shop.com/" -> "https://shop.com")
+ */
+if (!function_exists('seo_site_address')) {
+    function seo_site_address(mixed $value): string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return '';
+        }
+
+        return rtrim(preg_match('#^https?://#i', $value) ? $value : 'https://' . ltrim($value, '/'), '/');
+    }
+}
+
 // Содержимое SiteMap конфига по-умолчанию
 const DEFAULT_SITEMAP = <<<EOD
 <?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="https://www.sitemaps.org/schemas/sitemap/0.9">
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
         <loc>{{ site_address }}</loc>
         <lastmod>{{ df('now', 'Y-m-d') }}</lastmod>
@@ -27,7 +44,7 @@ const DEFAULT_SITEMAP = <<<EOD
     {% for category in publicationCategories %}
         <url>
             <loc>{{ site_address }}/{{ category.address }}</loc>
-            <lastmod>{{ category.date|df('Y-m-d') }}</lastmod>
+            {% if category.date %}<lastmod>{{ category.date|df('Y-m-d') }}</lastmod>{% endif %}
             <changefreq>monthly</changefreq>
             <priority>0.5</priority>
         </url>
@@ -49,7 +66,7 @@ const DEFAULT_SITEMAP = <<<EOD
     {% for category in catalogCategories %}
         <url>
             <loc>{{ site_address }}/{{ catalog_address }}/{{ category.address }}</loc>
-            <lastmod>{{ category.date|df('Y-m-d') }}</lastmod>
+            {% if category.date %}<lastmod>{{ category.date|df('Y-m-d') }}</lastmod>{% endif %}
             <changefreq>weekly</changefreq>
             <priority>0.7</priority>
         </url>
@@ -80,11 +97,11 @@ const DEFAULT_GMF = <<<EOD
                 <g:description>{{ product.description|striptags }}</g:description>
                 <g:link>{{ site_address }}{{ catalog_address }}/{{ product.address }}</g:link>
     
-                {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
-                    {% if loop.index0 == 0 %}
-                        <g:image_link>{{ site_address }}{{ file.path.middle }}</g:image_link>
+                {% for url in product.images %}
+                    {% if loop.first %}
+                        <g:image_link>{{ url }}</g:image_link>
                     {% else %}
-                        <g:additional_image_link>{{ site_address }}{{ file.path.middle }}</g:additional_image_link>
+                        <g:additional_image_link>{{ url }}</g:additional_image_link>
                     {% endif %}
                 {% endfor %}
     
@@ -126,10 +143,10 @@ const DEFAULT_YANDEX_YML = <<<EOD
                 <offer id="{{ product.id }}">
                     <name>{{ product.title }}</name>
                     <url>{{ site_address }}{{ catalog_address }}/{{ product.address }}</url>
-                    <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
+                    <categoryId>{{ product.category_id }}</categoryId>
 
-                    {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
-                        <picture>{{ site_address }}{{ file.path.middle }}</picture>
+                    {% for url in product.images %}
+                        <picture>{{ url }}</picture>
                     {% endfor %}
                     
                     <description>{{ product.description }}</description>
@@ -139,7 +156,7 @@ const DEFAULT_YANDEX_YML = <<<EOD
                     <vendorCode>{{ product.vendorcode }}</vendorCode>
                     <barcode>{{ product.barcode }}</barcode>
                     <country_of_origin>{{ product.country }}</country_of_origin>
-                    <weight>{{ product.volume }}</weight>
+                    {% if product.dimension.weight %}<weight>{{ product.dimension.weight }}</weight>{% endif %}
                 </offer>
             {% endfor %}
         </offers>
@@ -167,7 +184,7 @@ const DEFAULT_HLI_XML = <<<EOD
         {% for product in products %}
             <item>
                 <id>{{ product.id }}</id>
-                <categoryId>{{ categories.firstWhere('uuid', product.category).id }}</categoryId>
+                <categoryId>{{ product.category_id }}</categoryId>
                 <code>{{ product.vendorcode }}</code>
                 <barcode>{{ product.barcode }}</barcode>
                 <vendor>{{ product.manufacturer }}</vendor>
@@ -175,8 +192,8 @@ const DEFAULT_HLI_XML = <<<EOD
                 <description>{{ product.description }}</description>
                 <url>{{ site_address }}{{ catalog_address }}/{{ product.address }}</url>
 
-                {% for file in (product.files ?? categories.firstWhere('uuid', product.category).files ?? []) %}
-                    <picture>{{ site_address }}{{ file.path.middle }}</picture>
+                {% for url in product.images %}
+                    <picture>{{ url }}</picture>
                 {% endfor %}
                 
                 <priceRUAH>{{ product.price }}</priceRUAH>

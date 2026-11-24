@@ -41,12 +41,15 @@ abstract class AbstractFeedTask extends AbstractTask
         /** @var ProductService $productService */
         $productService = $this->container->get(ProductService::class);
 
-        $categories = $categoryService->read(['status' => CatalogStatus::WORK]);
+        // a hidden category takes its branch and its products with it, as on the site
+        $categories = $categoryService->read(['status' => CatalogStatus::WORK, 'is_hidden' => false]);
         $products = $productService->read(['status' => CatalogStatus::WORK]);
 
-        $data = array_merge($this->commonData(), $this->feedData(), [
-            'categories' => collect($this->prepareCategory($categories->sortBy('title'))),
-            'products' => collect($this->prepareProduct($products)),
+        $data = $this->commonData();
+        $preparedCategories = $this->prepareCategory($categories->sortBy('title'));
+        $data = array_merge($data, $this->feedData(), [
+            'categories' => collect($preparedCategories),
+            'products' => collect($this->prepareProduct($products, $categories)),
         ]);
 
         $template = trim((string) $this->parameter(static::TEMPLATE_PARAM, ''));
@@ -71,7 +74,7 @@ abstract class AbstractFeedTask extends AbstractTask
     {
         return [
             'shop_title' => $this->parameter('SearchOptimizationPlugin_shop_title', ''),
-            'site_address' => rtrim($this->parameter('common_homepage', ''), '/'),
+            'site_address' => seo_site_address($this->parameter('common_homepage', '')),
             'catalog_address' => '/' . $this->parameter('catalog_address', 'catalog'),
             'email' => $this->parameter('mail_from', ''),
             'shop_id' => $this->parameter('SearchOptimizationPlugin_shop_id', ''),
@@ -114,41 +117,94 @@ abstract class AbstractFeedTask extends AbstractTask
         return rename($tmp, $target);
     }
 
-    protected int $indexCategory = 0;
+    /**
+     * @var array<string, int> category uuid => the id it has in the feeds
+     */
+    protected array $categoryIds = [];
+
+    /**
+     * A number that belongs to the record for good: a feed id that is the position in a list
+     * moves every time something is added or removed, and the marketplaces take that for
+     * another offer. Derived from the uuid; a clash takes the next free number.
+     */
+    protected function categoryId(string $uuid): int
+    {
+        $id = hexdec(substr(sha1($uuid), 0, 7)) ?: 1;
+
+        while (in_array($id, $this->categoryIds, true)) {
+            ++$id;
+        }
+
+        return $this->categoryIds[$uuid] = $id;
+    }
+
+    /**
+     * Same idea for an offer: 16 characters of [0-9a-f], within the 20 of [a-zA-Z0-9] that
+     * Yandex Market allows
+     */
+    protected function productId(string $uuid): string
+    {
+        return substr(sha1($uuid), 0, 16);
+    }
 
     /**
      * Depth first walk of the category tree that rewrites the uuid based
-     * relations into the sequential integer ids the feed formats expect.
+     * relations into the integer ids the feed formats expect.
      */
     protected function prepareCategory(Collection $categories, ?string $parent = null): array
     {
         $result = [];
 
         foreach ($categories->where('parent_uuid', $parent) as $model) {
-            /** @var \App\Domain\Models\Catalog\Category $model */
+            /** @var \App\Domain\Models\CatalogCategory $model */
             $item = $model->toArray();
-            $item['parent'] = $item['parent_uuid'] = $categories->firstWhere('uuid', $parent)->buf ?? null;
+            $item['parent'] = $item['parent_uuid'] = $parent !== null ? ($this->categoryIds[$parent] ?? null) : null;
             $item['description'] = str_replace('&nbsp;', '', strip_tags((string) $model->description));
-            $model->buf = $item['id'] = $item['buf'] = ++$this->indexCategory;
+            $item['id'] = $item['buf'] = $this->categoryId((string) $model->uuid);
 
             $result[] = $item;
-            $result = array_merge($result, $this->prepareCategory($categories, $model->uuid));
+            $result = array_merge($result, $this->prepareCategory($categories, (string) $model->uuid));
         }
 
         return $result;
     }
 
-    protected int $indexProduct = 0;
-
-    protected function prepareProduct(Collection $products): array
+    /**
+     * Besides the fields of the product: `id` (stable), `category_id` (the id of its category in
+     * the feed) and `images`, absolute addresses of its pictures (those of its category when it
+     * has none). Products of a category that is not in the feed are left out.
+     */
+    protected function prepareProduct(Collection $products, Collection $categories): array
     {
         $result = [];
+        $site = seo_site_address($this->parameter('common_homepage', ''));
+        $byUuid = $categories->keyBy('uuid');
+
+        $pictures = static function ($model) use ($site): array {
+            $urls = [];
+
+            foreach ($model->files as $file) {
+                if (str_starts_with((string) $file->type, 'image/')) {
+                    $urls[] = $site . $file->public_path('middle');
+                }
+            }
+
+            return $urls;
+        };
 
         foreach ($products as $model) {
-            /** @var \App\Domain\Models\Catalog\Product $model */
+            /** @var \App\Domain\Models\CatalogProduct $model */
+            $category = (string) $model->category_uuid;
+
+            if (!isset($this->categoryIds[$category])) {
+                continue;
+            }
+
             $item = $model->toArray();
             $item['description'] = str_replace('&nbsp;', '', strip_tags((string) $model->description));
-            $model->buf = $item['id'] = $item['buf'] = ++$this->indexProduct;
+            $item['id'] = $item['buf'] = $this->productId((string) $model->uuid);
+            $item['category_id'] = $this->categoryIds[$category];
+            $item['images'] = $pictures($model) ?: $pictures($byUuid[$category]);
 
             $result[] = $item;
         }
